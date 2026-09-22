@@ -131,6 +131,33 @@ const input = (id, value) =>
   assert.equal(vm.runInContext("data.user.location", context), "Tubigon, Bohol");
   assert.equal(JSON.parse(storage.get("buildcycle-demo-v2")).version, 3);
 
+  const support = getNode("support-root");
+  assert.match(support.innerHTML, /support-fab/);
+  await click({ supportAction: "open" });
+  assert.match(support.innerHTML, /CycleMate/);
+  assert.match(support.innerHTML, /role="dialog"/);
+  await click({ supportAction: "nearby" });
+  assert.match(support.innerHTML, /Ceramic Floor Tiles/);
+  await click({ supportAction: "categories" });
+  assert.match(support.innerHTML, /data-support-category="Lumber"/);
+  await click({ supportCategory: "Lumber" });
+  assert.match(support.innerHTML, /Reclaimed Hardwood Planks/);
+  await click({ supportAction: "reset" });
+  assert.match(support.innerHTML, /What can I help you with today/);
+  await click({ supportAction: "close" });
+  assert.match(support.innerHTML, /support-fab/);
+  vm.runInContext('ui.screen = "detail"; renderCycleMate();', context);
+  assert.equal(support.innerHTML, "");
+  vm.runInContext('ui.screen = "chat"; renderCycleMate();', context);
+  assert.equal(support.innerHTML, "");
+  vm.runInContext('ui.screen = "deal"; renderCycleMate();', context);
+  assert.equal(support.innerHTML, "");
+  vm.runInContext('ui.screen = "home"; renderCycleMate();', context);
+  assert.match(support.innerHTML, /support-fab/);
+  assert.equal(typeof listeners.pointerdown, "function");
+  assert.equal(typeof listeners.pointermove, "function");
+  assert.equal(typeof listeners.pointerup, "function");
+
   assert.equal(
     vm.runInContext('listingAvailableQuantity(getListing("blocks"))', context),
     200,
@@ -199,7 +226,12 @@ const input = (id, value) =>
     "demo data must load before the app",
   );
   assert.doesNotMatch(index, /type="module"/);
-  for (const file of ["css/base.css", "css/marketplace.css", "css/flows.css"]) {
+  for (const file of [
+    "css/base.css",
+    "css/marketplace.css",
+    "css/flows.css",
+    "css/support.css",
+  ]) {
     const css = read(file);
     assert.equal(
       (css.match(/{/g) || []).length,
@@ -221,7 +253,7 @@ const input = (id, value) =>
   }
 
   console.log(
-    "BuildCycle smoke test passed: boot, migration, quantity deals, search, save, chat, sheets, and assets.",
+    "BuildCycle smoke test passed: boot, CycleMate, migration, quantity deals, search, save, chat, sheets, and assets.",
   );
 })().catch((error) => {
   console.error(error);

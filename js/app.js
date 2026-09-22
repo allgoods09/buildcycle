@@ -95,9 +95,33 @@ let ui = {
 };
 const app = document.getElementById("app");
 const overlayRoot = document.getElementById("overlay-root");
+const supportRoot = document.getElementById("support-root");
 const toastRoot = document.getElementById("toast-root");
 let toastTimer;
 let sheetTrigger = null;
+const SUPPORT_POSITION_KEY = "buildcycle-cyclemate-position-v1";
+let supportPosition = null;
+try {
+  const savedSupportPosition = JSON.parse(
+    localStorage.getItem(SUPPORT_POSITION_KEY) || "null",
+  );
+  if (
+    Number.isFinite(savedSupportPosition?.x) &&
+    Number.isFinite(savedSupportPosition?.y)
+  )
+    supportPosition = savedSupportPosition;
+} catch {
+  supportPosition = null;
+}
+const supportState = {
+  open: false,
+  step: "main",
+  history: [],
+  category: null,
+  messages: [],
+};
+let supportDrag = null;
+let suppressSupportOpen = false;
 function persist() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -347,6 +371,472 @@ const conditions = [
   "Industrial",
   "Discounted",
 ];
+function cycleMateGreeting() {
+  return [
+    {
+      role: "bot",
+      text: `Hello, ${data.user.name.split(" ")[0] || "builder"}! I’m CycleMate, your BuildCycle demo assistant.`,
+    },
+    {
+      role: "bot",
+      text: "What can I help you with today? Choose an option below and I’ll guide you.",
+    },
+  ];
+}
+function resetCycleMate() {
+  supportState.step = "main";
+  supportState.history = [];
+  supportState.category = null;
+  supportState.dealId = null;
+  supportState.messages = cycleMateGreeting();
+}
+function cycleMateListings() {
+  return data.listings.filter(
+    (listing) => listing.status !== "sold" && !listing.mine,
+  );
+}
+function cycleMateBounds() {
+  const rect = app.getBoundingClientRect?.();
+  if (rect && rect.width > 0 && rect.height > 0)
+    return {
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+    };
+  return {
+    left: 0,
+    top: 0,
+    width: Number(window.innerWidth) || 390,
+    height: Number(window.innerHeight) || 800,
+  };
+}
+function resolvedCycleMatePosition() {
+  const bounds = cycleMateBounds();
+  const maxX = Math.max(10, bounds.width - 70);
+  const maxY = Math.max(10, bounds.height - 145);
+  const fallback = { x: maxX, y: maxY };
+  const source = supportPosition || fallback;
+  return {
+    x: Math.min(maxX, Math.max(10, Number(source.x) || fallback.x)),
+    y: Math.min(maxY, Math.max(10, Number(source.y) || fallback.y)),
+  };
+}
+function applyCycleMateLayout() {
+  const bounds = cycleMateBounds();
+  const fab = document.querySelector(".support-fab");
+  if (fab) {
+    const position = resolvedCycleMatePosition();
+    supportPosition = position;
+    fab.style.left = `${bounds.left + position.x}px`;
+    fab.style.top = `${bounds.top + position.y}px`;
+  }
+  const scrim = document.querySelector(".support-scrim");
+  if (scrim) {
+    scrim.style.left = `${bounds.left}px`;
+    scrim.style.top = `${bounds.top}px`;
+    scrim.style.width = `${bounds.width}px`;
+    scrim.style.height = `${bounds.height}px`;
+  }
+  const panel = document.querySelector(".support-panel");
+  if (panel) {
+    const panelWidth = Math.min(366, Math.max(280, bounds.width - 24));
+    const panelHeight = Math.min(660, Math.max(340, bounds.height - 28));
+    panel.style.left = `${bounds.left + (bounds.width - panelWidth) / 2}px`;
+    panel.style.top = `${bounds.top + (bounds.height - panelHeight) / 2}px`;
+    panel.style.width = `${panelWidth}px`;
+    panel.style.height = `${panelHeight}px`;
+  }
+}
+function cycleMateResultCards(ids = []) {
+  if (!ids.length) return "";
+  return `<div class="support-results">${ids
+    .map(getListing)
+    .map(
+      (listing) =>
+        `<button class="support-result" data-support-listing="${escapeHtml(listing.id)}"><img src="${escapeHtml(imagePath(listing))}" alt=""><span><strong>${escapeHtml(listing.title)}</strong><small>${money(listing.price)} / ${escapeHtml(listing.unit)} · ${escapeHtml(listing.distance)} km</small></span>${icon("chevron", 15)}</button>`,
+    )
+    .join("")}</div>`;
+}
+function cycleMateMessagesMarkup() {
+  return supportState.messages
+    .map(
+      (message) =>
+        `<div class="support-message ${message.role === "user" ? "user" : "bot"}">${message.role === "bot" ? `<span class="support-mini-avatar">${icon("spark", 14)}</span>` : ""}<div class="support-bubble">${escapeHtml(message.text)}</div></div>${message.listingIds ? cycleMateResultCards(message.listingIds) : ""}`,
+    )
+    .join("");
+}
+function cycleMateQuick(label, action, style = "") {
+  return `<button class="support-quick ${style}" data-support-action="${escapeHtml(action)}">${escapeHtml(label)}</button>`;
+}
+function cycleMateQuickReplies() {
+  switch (supportState.step) {
+    case "nearby":
+      return [
+        cycleMateQuick("Browse categories", "categories", "primary"),
+        cycleMateQuick("Open full search", "open-search"),
+        cycleMateQuick("Buying help", "buy"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "categories":
+      return `${categories
+        .map(
+          (category) =>
+            `<button class="support-quick primary" data-support-category="${escapeHtml(category)}">${escapeHtml(category)}</button>`,
+        )
+        .join("")}${cycleMateQuick("Back", "back", "subtle")}`;
+    case "category-results":
+      return [
+        cycleMateQuick(
+          `See all ${supportState.category || "materials"}`,
+          "open-category",
+          "primary",
+        ),
+        cycleMateQuick("Choose another category", "categories"),
+        cycleMateQuick("Nearest instead", "nearby"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "buy":
+      return [
+        cycleMateQuick("Choosing a quantity", "quantity-help", "primary"),
+        cycleMateQuick("Offers and negotiation", "offer-help"),
+        cycleMateQuick("Protected deals", "protection-help"),
+        cycleMateQuick("Browse categories", "categories"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "quantity-help":
+      return [
+        cycleMateQuick("Show nearby materials", "nearby", "primary"),
+        cycleMateQuick("How offers work", "offer-help"),
+        cycleMateQuick("Open search", "open-search"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "offer-help":
+      return [
+        cycleMateQuick("Find something to offer on", "nearby", "primary"),
+        cycleMateQuick("Protected deals", "protection-help"),
+        cycleMateQuick("Open messages", "open-chats"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "protection-help":
+      return [
+        cycleMateQuick("Deal progress guide", "deal-guide", "primary"),
+        cycleMateQuick("Browse materials", "open-search"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "sell":
+      return [
+        cycleMateQuick("Open Sell", "open-sell", "primary"),
+        cycleMateQuick("What makes a good listing?", "selling-tips"),
+        cycleMateQuick("About the AI helper", "ai-helper"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "selling-tips":
+      return [
+        cycleMateQuick("Create a listing", "open-sell", "primary"),
+        cycleMateQuick("About the AI helper", "ai-helper"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "ai-helper":
+      return [
+        cycleMateQuick("Try it in Sell", "open-sell", "primary"),
+        cycleMateQuick("Listing tips", "selling-tips"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "deal":
+      return [
+        supportState.dealId
+          ? cycleMateQuick("View latest deal", "view-deal", "primary")
+          : cycleMateQuick("Browse materials", "nearby", "primary"),
+        cycleMateQuick("Deal progress guide", "deal-guide"),
+        cycleMateQuick("Open messages", "open-chats"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "deal-guide":
+      return [
+        cycleMateQuick("Check my latest deal", "deal", "primary"),
+        cycleMateQuick("Open messages", "open-chats"),
+        cycleMateQuick("Browse materials", "nearby"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "saved":
+      return [
+        cycleMateQuick("Open saved items", "open-saved", "primary"),
+        cycleMateQuick("Find nearby materials", "nearby"),
+        cycleMateQuick("Back", "back", "subtle"),
+      ].join("");
+    case "how":
+      return [
+        cycleMateQuick("Help me buy", "buy", "primary"),
+        cycleMateQuick("Help me sell", "sell"),
+        cycleMateQuick("Explain deal progress", "deal-guide"),
+        cycleMateQuick("Start over", "reset", "subtle"),
+      ].join("");
+    default:
+      return [
+        cycleMateQuick("Show nearby materials", "nearby", "primary"),
+        cycleMateQuick("Browse by category", "categories", "primary"),
+        cycleMateQuick("Help me buy", "buy"),
+        cycleMateQuick("Help me sell", "sell"),
+        cycleMateQuick("Check my latest deal", "deal"),
+        cycleMateQuick(
+          `Saved items (${data.saved.length})`,
+          "saved",
+        ),
+        cycleMateQuick("How BuildCycle works", "how"),
+      ].join("");
+  }
+}
+function renderCycleMate() {
+  if (!supportRoot) return;
+  const authenticated =
+    data.authed && !["onboarding", "login", "signup"].includes(ui.screen);
+  const focusedFlow = ["chat", "detail", "deal", "rating"].includes(
+    ui.screen,
+  );
+  if (!authenticated || focusedFlow) {
+    supportState.open = false;
+    supportRoot.replaceChildren();
+    return;
+  }
+  if (!supportState.messages.length) resetCycleMate();
+  if (!supportState.open) {
+    supportRoot.innerHTML = `<button class="support-fab" data-support-action="open" aria-label="Open CycleMate support. Drag to reposition." title="CycleMate support · drag to reposition">${icon("chat", 25)}<span class="support-spark">${icon("spark", 11)}</span></button>`;
+    applyCycleMateLayout();
+    return;
+  }
+  supportRoot.innerHTML = `<button class="support-scrim" data-support-dismiss aria-label="Close CycleMate"></button><section class="support-panel" role="dialog" aria-modal="true" aria-label="CycleMate demo support"><header class="support-head"><span class="support-avatar">${icon("spark", 22)}</span><div class="support-head-copy"><strong>CycleMate</strong><small>Online · guided demo support</small></div><button class="icon-btn small" data-support-action="reset" aria-label="Restart conversation">${icon("refresh", 16)}</button><button class="icon-btn small" data-support-action="close" aria-label="Close CycleMate">${icon("x", 17)}</button></header><div class="support-conversation" id="support-conversation"><p class="support-day">CYCLEMATE · DEMO ASSISTANT</p>${cycleMateMessagesMarkup()}</div><footer class="support-actions"><p class="support-actions-label">${icon("spark", 12)} Suggested actions</p><div class="support-quick-list">${cycleMateQuickReplies()}</div><p class="support-demo-note">Guided prototype responses · no external AI is contacted</p></footer></section>`;
+  applyCycleMateLayout();
+  const conversation = document.getElementById("support-conversation");
+  if (conversation) conversation.scrollTop = conversation.scrollHeight;
+}
+function cycleMateTurn(label, step, response, listingIds = []) {
+  supportState.history.push(supportState.step);
+  supportState.step = step;
+  supportState.messages.push({ role: "user", text: label });
+  supportState.messages.push({
+    role: "bot",
+    text: response,
+    ...(listingIds.length ? { listingIds } : {}),
+  });
+  renderCycleMate();
+}
+function closeCycleMate({ restoreFocus = true } = {}) {
+  supportState.open = false;
+  renderCycleMate();
+  if (restoreFocus) document.querySelector(".support-fab")?.focus();
+}
+function navigateFromCycleMate(destination) {
+  closeCycleMate({ restoreFocus: false });
+  if (destination === "upload") {
+    ui.editId = null;
+    ui.photo = null;
+    ui.draft = {};
+    ui.premium = false;
+  }
+  goto(destination);
+}
+function handleCycleMateCategory(category) {
+  const matches = cycleMateListings()
+    .filter((listing) => listing.category === category)
+    .sort((a, b) => Number(a.distance) - Number(b.distance));
+  supportState.category = category;
+  cycleMateTurn(
+    category,
+    "category-results",
+    matches.length
+      ? `I found ${matches.length} available ${category.toLowerCase()} listing${matches.length === 1 ? "" : "s"}. Here are the closest options.`
+      : `There are no active ${category.toLowerCase()} listings right now. You can try another category or open the full search.`,
+    matches.slice(0, 3).map((listing) => listing.id),
+  );
+}
+function handleCycleMateAction(action) {
+  if (action === "open") {
+    if (suppressSupportOpen) {
+      suppressSupportOpen = false;
+      return;
+    }
+    if (ui.sheet) closeSheet();
+    supportState.open = true;
+    renderCycleMate();
+    document
+      .querySelector('[data-support-action="close"]')
+      ?.focus();
+    return;
+  }
+  if (action === "close") {
+    closeCycleMate();
+    return;
+  }
+  if (action === "reset") {
+    resetCycleMate();
+    renderCycleMate();
+    return;
+  }
+  if (action === "back") {
+    supportState.step = supportState.history.pop() || "main";
+    supportState.messages.push({ role: "user", text: "Go back" });
+    supportState.messages.push({
+      role: "bot",
+      text: "Of course. Here are the previous options.",
+    });
+    renderCycleMate();
+    return;
+  }
+  if (action === "open-search") {
+    ui.category = "All";
+    ui.search = "";
+    navigateFromCycleMate("search");
+    return;
+  }
+  if (action === "open-category") {
+    ui.category = supportState.category || "All";
+    ui.search = "";
+    navigateFromCycleMate("search");
+    return;
+  }
+  if (action === "open-sell") {
+    navigateFromCycleMate("upload");
+    return;
+  }
+  if (action === "open-saved") {
+    navigateFromCycleMate("saved");
+    return;
+  }
+  if (action === "open-chats") {
+    navigateFromCycleMate("chats");
+    return;
+  }
+  if (action === "view-deal") {
+    const deal = data.deals.find(
+      (item) => item.id === supportState.dealId,
+    );
+    if (deal) {
+      ui.dealId = deal.id;
+      navigateFromCycleMate("deal");
+    }
+    return;
+  }
+  if (action === "nearby") {
+    const nearby = cycleMateListings()
+      .sort((a, b) => Number(a.distance) - Number(b.distance))
+      .slice(0, 3);
+    cycleMateTurn(
+      "Show nearby materials",
+      "nearby",
+      nearby.length
+        ? `These are the closest available materials to ${data.user.location}. Tap one to view its details.`
+        : "I couldn’t find an active buyer listing. Try the full search or post a material instead.",
+      nearby.map((listing) => listing.id),
+    );
+    return;
+  }
+  if (action === "categories") {
+    cycleMateTurn(
+      "Browse by category",
+      "categories",
+      "What kind of material are you looking for?",
+    );
+    return;
+  }
+  if (action === "buy") {
+    cycleMateTurn(
+      "Help me buy",
+      "buy",
+      "I can help you find materials, choose a smaller quantity, make an offer, or understand the demo deal process. Where should we start?",
+    );
+    return;
+  }
+  if (action === "quantity-help") {
+    cycleMateTurn(
+      "Choosing a quantity",
+      "quantity-help",
+      "Open a listing and choose Make Offer or Buy / Deal. Enter any whole quantity from 1 up to the available stock; the subtotal and delivery total update immediately.",
+    );
+    return;
+  }
+  if (action === "offer-help") {
+    cycleMateTurn(
+      "Offers and negotiation",
+      "offer-help",
+      "Use Make Offer to propose a per-unit price and quantity. The simulated seller can accept it in Messages, then you can continue with that exact quantity and price.",
+    );
+    return;
+  }
+  if (action === "protection-help") {
+    cycleMateTurn(
+      "Protected deals",
+      "protection-help",
+      "Protected payment, delivery quotes, and tracking are visual simulations. The prototype never charges money or books a courier; cash on pickup is shown outside protection.",
+    );
+    return;
+  }
+  if (action === "sell") {
+    cycleMateTurn(
+      "Help me sell",
+      "sell",
+      "I can take you to the listing form or help you prepare a clearer material description first.",
+    );
+    return;
+  }
+  if (action === "selling-tips") {
+    cycleMateTurn(
+      "What makes a good listing?",
+      "selling-tips",
+      "Use a clear photo, name the material and condition, enter a numeric available quantity, mention dimensions, and explain when inspection or pickup is possible.",
+    );
+    return;
+  }
+  if (action === "ai-helper") {
+    cycleMateTurn(
+      "About the AI helper",
+      "ai-helper",
+      "The Sell page can generate editable example wording from your title, category, and location. It runs locally for this demo and never sends your information to an AI service.",
+    );
+    return;
+  }
+  if (action === "deal") {
+    const deal = data.deals[0];
+    supportState.dealId = deal?.id || null;
+    cycleMateTurn(
+      "Check my latest deal",
+      "deal",
+      deal
+        ? `Your latest demo deal is for ${getListing(deal.listingId).title}, quantity ${Math.max(1, Number(deal.quantity) || 1)}. You can open its progress or review how the stages work.`
+        : "You don’t have a demo deal yet. Open a listing and choose Buy / Deal, or make an offer and continue from Messages.",
+    );
+    return;
+  }
+  if (action === "deal-guide") {
+    cycleMateTurn(
+      "Explain deal progress",
+      "deal-guide",
+      "A demo deal moves from creation to seller preparation, pickup or delivery, receipt, and buyer confirmation. Use Advance demo status to present each stage.",
+    );
+    return;
+  }
+  if (action === "saved") {
+    const savedListings = data.listings.filter((listing) =>
+      data.saved.includes(listing.id),
+    );
+    cycleMateTurn(
+      "Show my saved items",
+      "saved",
+      savedListings.length
+        ? `You have ${savedListings.length} saved item${savedListings.length === 1 ? "" : "s"}. Here ${savedListings.length === 1 ? "it is" : "are the latest ones"}.`
+        : "You haven’t saved anything yet. Tap the heart on a listing, or let me show you nearby materials.",
+      savedListings.slice(0, 3).map((listing) => listing.id),
+    );
+    return;
+  }
+  if (action === "how") {
+    cycleMateTurn(
+      "How does BuildCycle work?",
+      "how",
+      "BuildCycle connects people who have usable construction surplus with nearby buyers. This prototype demonstrates discovery, offers, selling, chat, and transaction progress using local sample data.",
+    );
+  }
+}
 const option = (value, selected) =>
   `<option value="${escapeHtml(value)}" ${value === selected ? "selected" : ""}>${escapeHtml(value)}</option>`;
 function renderUpload() {
@@ -564,6 +1054,7 @@ const screens = {
 function render() {
   app.innerHTML = (screens[ui.screen] || renderHome)();
   overlayRoot.innerHTML = renderSheet();
+  renderCycleMate();
   const conversation = document.getElementById("conversation");
   if (conversation) conversation.scrollTop = conversation.scrollHeight;
 }
@@ -711,9 +1202,26 @@ function startDeal(
 }
 document.addEventListener("click", async (event) => {
   const el = event.target.closest(
-    "button,[data-action],[data-go],[data-sheet],[data-save],[data-open-listing],[data-open-chat],[data-condition],[data-review-tag],[data-star],[data-my-tab],[data-chat-tab],[data-sort],[data-edit]",
+    "button,[data-action],[data-go],[data-sheet],[data-save],[data-open-listing],[data-open-chat],[data-condition],[data-review-tag],[data-star],[data-my-tab],[data-chat-tab],[data-sort],[data-edit],[data-support-action],[data-support-listing],[data-support-category],[data-support-dismiss]",
   );
   if (!el) return;
+  if (Object.prototype.hasOwnProperty.call(el.dataset, "supportDismiss")) {
+    closeCycleMate();
+    return;
+  }
+  if (el.dataset.supportListing) {
+    closeCycleMate({ restoreFocus: false });
+    openListing(el.dataset.supportListing);
+    return;
+  }
+  if (el.dataset.supportCategory) {
+    handleCycleMateCategory(el.dataset.supportCategory);
+    return;
+  }
+  if (el.dataset.supportAction) {
+    handleCycleMateAction(el.dataset.supportAction);
+    return;
+  }
   if (el.dataset.action === "close-sheet") {
     closeSheet();
     return;
@@ -1058,12 +1566,87 @@ document.addEventListener("click", async (event) => {
     return;
   }
 });
+document.addEventListener("pointerdown", (event) => {
+  const fab = event.target.closest?.(".support-fab");
+  if (!fab || (event.pointerType === "mouse" && event.button !== 0)) return;
+  const bounds = cycleMateBounds();
+  const position = resolvedCycleMatePosition();
+  supportDrag = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    offsetX: event.clientX - bounds.left - position.x,
+    offsetY: event.clientY - bounds.top - position.y,
+    moved: false,
+    fab,
+  };
+  fab.classList.add("dragging");
+  try {
+    fab.setPointerCapture?.(event.pointerId);
+  } catch {
+    /* Synthetic pointer events may not create browser capture. */
+  }
+});
+document.addEventListener("pointermove", (event) => {
+  if (!supportDrag || event.pointerId !== supportDrag.pointerId) return;
+  const bounds = cycleMateBounds();
+  const maxX = Math.max(10, bounds.width - 70);
+  const maxY = Math.max(10, bounds.height - 145);
+  if (
+    Math.hypot(
+      event.clientX - supportDrag.startX,
+      event.clientY - supportDrag.startY,
+    ) > 5
+  )
+    supportDrag.moved = true;
+  supportPosition = {
+    x: Math.min(
+      maxX,
+      Math.max(10, event.clientX - bounds.left - supportDrag.offsetX),
+    ),
+    y: Math.min(
+      maxY,
+      Math.max(10, event.clientY - bounds.top - supportDrag.offsetY),
+    ),
+  };
+  applyCycleMateLayout();
+  event.preventDefault();
+});
+function finishCycleMateDrag(event) {
+  if (!supportDrag || event.pointerId !== supportDrag.pointerId) return;
+  supportDrag.fab.classList.remove("dragging");
+  try {
+    if (supportDrag.fab.hasPointerCapture?.(event.pointerId))
+      supportDrag.fab.releasePointerCapture(event.pointerId);
+  } catch {
+    /* The pointer may already have been released by the browser. */
+  }
+  suppressSupportOpen = supportDrag.moved;
+  if (suppressSupportOpen)
+    setTimeout(() => {
+      suppressSupportOpen = false;
+    }, 300);
+  supportDrag = null;
+  try {
+    localStorage.setItem(SUPPORT_POSITION_KEY, JSON.stringify(supportPosition));
+  } catch {
+    /* Position persistence is optional. */
+  }
+}
+document.addEventListener("pointerup", finishCycleMateDrag);
+document.addEventListener("pointercancel", finishCycleMateDrag);
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && supportState.open) {
+    event.preventDefault();
+    closeCycleMate();
+    return;
+  }
   if (event.key === "Escape" && ui.sheet) {
     event.preventDefault();
     closeSheet();
   }
 });
+window.addEventListener("resize", applyCycleMateLayout);
 window.addEventListener("storage", (event) => {
   if (event.key !== STORAGE_KEY || !event.newValue) return;
   try {

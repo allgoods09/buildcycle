@@ -21,7 +21,7 @@ node tests/smoke-test.js
 node tests/web-smoke-test.js
 ```
 
-The checks cover direct-file compatibility, saved-data migration, shared mobile/web data, quantity-based deal totals, search recovery, saved-item feedback, chat search, stable dialog behavior and stylesheet structure.
+The checks cover direct-file compatibility, the CycleMate support paths, saved-data migration, shared mobile/web data, quantity-based deal totals, search recovery, saved-item feedback, chat search, stable dialog behavior and stylesheet structure.
 
 For a quick presentation check, use a narrow/mobile viewport and follow this path:
 
@@ -32,10 +32,11 @@ For a quick presentation check, use a narrow/mobile viewport and follow this pat
 5. Save a listing. Its heart should fill red immediately; the count beside **Profile → Saved Items** should increase and the page should contain that listing. Tap the heart again to confirm both update.
 6. In **Chats**, tap the search icon and search for `Marcus` or `lumber`. Confirm only the relevant conversation remains, then close the search field.
 7. Open any Profile sheet such as **Settings**. Press `Escape` on a hardware keyboard: the sheet should close and focus should return to the button that opened it.
-8. Open a listing with multiple units available. In **Make Offer** and **Buy / Deal**, choose a smaller quantity and confirm the material subtotal and total update. Carry an accepted offer into a deal and confirm the same quantity appears in chat and the deal summary.
-9. Open Marcus's chat, send a message, accept an offer, continue to a deal and advance every stage. The progress icons should remain behind the sticky action button.
-10. In **Sell**, enter a title and location, then use **Suggest description**. Confirm the sentence contains the actual location and no template-code text such as `data.user.location`.
-11. Use **Profile → Reset Demo Marketplace** and confirm starter listings, chats, saved items and deals reset while the signed-in profile remains.
+8. Drag the floating **CycleMate** button to another part of the screen, release it, and confirm tapping still opens the assistant. Try **Show nearby materials** and **Browse by category**, then open a suggested listing. Refresh once and confirm the floating position is remembered.
+9. Open a listing with multiple units available. In **Make Offer** and **Buy / Deal**, choose a smaller quantity and confirm the material subtotal and total update. Carry an accepted offer into a deal and confirm the same quantity appears in chat and the deal summary.
+10. Open Marcus's chat, send a message, accept an offer, continue to a deal and advance every stage. The progress icons should remain behind the sticky action button.
+11. In **Sell**, enter a title and location, then use **Suggest description**. Confirm the sentence contains the actual location and no template-code text such as `data.user.location`.
+12. Use **Profile → Reset Demo Marketplace** and confirm starter listings, chats, saved items and deals reset while the signed-in profile remains.
 
 For the desktop handoff, open the web page beside the mobile page from the same server. Save or post an item in one layout and confirm the other open tab updates automatically; the catalog and activity should agree. A newly opened tab also loads the latest shared browser state.
 
@@ -51,6 +52,8 @@ You can switch layouts from inside the prototype using the dedicated **Try the W
 
 The supplied material images are bundled in `assets/`. Extra demo listings reuse those photos rather than adding unrelated images. Listings, chats, saved items, reviews and deal progress persist locally in the browser. **Profile → Reset Demo Marketplace** restores the starter marketplace while preserving the signed-in demo profile.
 
+The mobile layout also includes **CycleMate**, a draggable guided-support assistant. Its quick replies use the current local catalog, saved items and latest deal to suggest relevant next actions. It is a deterministic prototype interaction and does not contact an external AI service.
+
 ## Demo boundaries
 
 This is an interactive visual prototype. Authentication, social login, seller verification, AI text assistance, protected payment, delivery quotes/tracking, notifications and seller replies are simulated. No real account, charge, courier booking, device location lookup or external API request occurs. Selected quantities are recorded on the local demo deal, but stock is not reserved or reduced across buyers. **Enable Location** continues with the sample Bohol place; the manual option lets you type another display location. Cash on pickup is shown outside protected payment. The sample commission and premium figures are illustrative only.
@@ -63,6 +66,7 @@ This is an interactive visual prototype. Authentication, social login, seller ve
 - `css/base.css` — shared tokens, controls, navigation and responsive shell
 - `css/marketplace.css` — home, search, listing, chat and profile screens
 - `css/flows.css` — authentication, selling, deals, reviews and sheets
+- `css/support.css` — draggable CycleMate button, chat panel and quick replies
 - `css/web.css` — desktop workspace, navigation and responsive web layouts
 - `js/demo-data.js` — starter listings, chats and state factory
 - `js/app.js` — screen rendering and prototype interactions
