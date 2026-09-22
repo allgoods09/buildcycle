@@ -80,6 +80,7 @@ let webUI = {
   chatTab: "All Chats",
   chatSearch: "",
   dialog: null,
+  quantity: 1,
   fulfilment: "pickup",
   payMethod: "protected",
   dealId: null,
@@ -324,7 +325,7 @@ function renderWebDetail() {
   const saved = webData.saved.includes(listing.id);
   return webShell(
     `${pageHeading("Material details", "Review condition, quantity, seller, and collection details before agreeing.", `<button class="web-btn outline" data-web-go="search">${webIcon("back", 17)} Back to results</button>`)}` +
-      `<div class="detail-layout"><div><section class="panel detail-gallery"><img src="${webEscape(webImage(listing))}" alt="${webEscape(listing.title)}"></section><section class="panel description-card"><h2>Description</h2><p>${webEscape(listing.description)}</p></section><section class="panel spec-card"><h2>Material specifications</h2><div class="spec-list">${(listing.specs || []).map(([name, value]) => `<div class="spec-item"><small>${webEscape(name)}</small><strong>${webEscape(value)}</strong></div>`).join("")}</div></section><section class="panel seller-card">${webAvatar(listing.seller, true)}<div><b>${webEscape(listing.seller)}</b><small>★ ${webEscape(listing.rating || "4.8")} · Sample seller profile</small></div>${listing.mine ? webBadge("Your listing") : webBadge("Verified demo")}</section></div><aside class="panel detail-panel">${webBadge(listing.tag)}<h1>${webEscape(listing.title)}</h1><div class="detail-location">${webIcon("pin", 15)}${webEscape(listing.distance)} km away · ${webEscape(listing.location)}</div><div class="detail-price">${webMoney(listing.price)} <small>/ ${webEscape(listing.unit)}</small></div><p><b>${webEscape(listing.qty)}</b> available · ${webEscape(listing.condition)}</p><div class="detail-actions"><button class="web-btn outline" data-web-save="${webEscape(listing.id)}">${webIcon("heart", 17)} ${saved ? "Saved" : "Save"}</button><button class="web-btn outline" data-web-action="message-seller">${webIcon("chat", 17)} Message</button><button class="web-btn full-row" data-web-dialog="offer">Make an offer</button><button class="web-btn teal full-row" data-web-dialog="checkout">Buy / start deal</button></div><div class="side-card"><strong>${webIcon("shield", 16)} Demo deal protection</strong><p>Protected payment and delivery choices are illustrative. No real payment or courier booking occurs.</p></div></aside></div>`,
+      `<div class="detail-layout"><div><section class="panel detail-gallery"><img src="${webEscape(webImage(listing))}" alt="${webEscape(listing.title)}"></section><section class="panel description-card"><h2>Description</h2><p>${webEscape(listing.description)}</p></section><section class="panel spec-card"><h2>Material specifications</h2><div class="spec-list">${(listing.specs || []).map(([name, value]) => `<div class="spec-item"><small>${webEscape(name)}</small><strong>${webEscape(value)}</strong></div>`).join("")}</div></section><section class="panel seller-card">${webAvatar(listing.seller, true)}<div><b>${webEscape(listing.seller)}</b><small>★ ${webEscape(listing.rating || "4.8")} · Sample seller profile</small></div>${listing.mine ? webBadge("Your listing") : webBadge("Verified demo")}</section></div><aside class="panel detail-panel">${webBadge(listing.tag)}<h1>${webEscape(listing.title)}</h1><div class="detail-location">${webIcon("pin", 15)}${webEscape(listing.distance)} km away · ${webEscape(listing.location)}</div><div class="detail-price">${webMoney(listing.price)} <small>/ ${webEscape(listing.unit)}</small></div><p><b>${webEscape(listing.qty)}</b> available · ${webEscape(listing.condition)}</p><div class="detail-actions"><button class="web-btn outline ${saved ? "saved-action" : ""}" data-web-save="${webEscape(listing.id)}" aria-label="${saved ? "Remove from saved items" : "Save listing"}" aria-pressed="${saved}">${webIcon("heart", 17)} ${saved ? "Saved" : "Save"}</button><button class="web-btn outline" data-web-action="message-seller">${webIcon("chat", 17)} Message</button><button class="web-btn full-row" data-web-dialog="offer">Make an offer</button><button class="web-btn teal full-row" data-web-dialog="checkout">Buy / start deal</button></div><div class="side-card"><strong>${webIcon("shield", 16)} Demo deal protection</strong><p>Protected payment and delivery choices are illustrative. No real payment or courier booking occurs.</p></div></aside></div>`,
   );
 }
 
@@ -376,12 +377,13 @@ function webThreadMarkup() {
     return `<section class="chat-thread"><div class="empty-state"><h2>No conversation selected</h2><p>Open a material and message its seller to begin.</p></div></section>`;
   const listing = webListing(chat.listingId);
   const deal = webData.deals.find((item) => item.chatId === chat.id);
+  const offerQuantity = Math.max(1, Number(chat.offer?.quantity) || 1);
   return `<section class="chat-thread"><header class="thread-head">${webAvatar(chat.name, false, chat.online)}<div><b>${webEscape(chat.name)}</b><small>${chat.online ? "Online" : "Usually replies today"}</small></div><button class="web-btn outline small" data-web-listing="${webEscape(listing.id)}">View listing</button></header><div class="messages" id="web-messages">${chat.messages
     .map(
       (message) =>
         `<div class="message ${message.mine ? "mine" : ""}">${message.mine ? "" : webAvatar(chat.name)}<div><div class="message-bubble">${webEscape(message.text)}</div><div class="message-time">${webEscape(message.time)}</div></div></div>`,
     )
-    .join("")}<button class="thread-listing" data-web-listing="${webEscape(listing.id)}"><img src="${webEscape(webImage(listing))}" alt=""><span><b>${webEscape(listing.title)}</b><small>${webMoney(listing.price)} / ${webEscape(listing.unit)}</small></span>${webIcon("arrow", 17)}</button>${chat.offer ? `<div class="thread-offer">${webBadge(chat.offer.status === "accepted" ? "Offer accepted" : "Offer sent")}<h3>${webMoney(chat.offer.price)} / ${webEscape(listing.unit)}</h3><p>${chat.offer.fulfilment === "delivery" ? "Partner delivery requested" : "Self-arranged pickup"}</p>${chat.offer.status === "pending" ? `<button class="web-btn teal small" data-web-action="accept-offer">Accept offer (demo)</button>` : `<button class="web-btn small" data-web-action="continue-deal">Continue deal</button>`}</div>` : ""}${deal ? `<button class="web-btn outline" data-web-action="view-deal">${webIcon("shield", 16)} View deal progress</button>` : ""}</div><form id="web-chat-form" class="composer"><input class="field" name="message" placeholder="Type a message…" aria-label="Type a message" autocomplete="off"><button class="web-btn" type="submit" aria-label="Send message">${webIcon("send", 18)} Send</button></form></section>`;
+    .join("")}<button class="thread-listing" data-web-listing="${webEscape(listing.id)}"><img src="${webEscape(webImage(listing))}" alt=""><span><b>${webEscape(listing.title)}</b><small>${webMoney(listing.price)} / ${webEscape(listing.unit)}</small></span>${webIcon("arrow", 17)}</button>${chat.offer ? `<div class="thread-offer">${webBadge(chat.offer.status === "accepted" ? "Offer accepted" : "Offer sent")}<h3>${webMoney(chat.offer.price)} / ${webEscape(listing.unit)}</h3><p>${offerQuantity} ${webEscape(listing.unit)}${offerQuantity === 1 ? "" : "s"} · ${webMoney(chat.offer.price * offerQuantity)} material subtotal</p><p>${chat.offer.fulfilment === "delivery" ? "Partner delivery requested" : "Self-arranged pickup"}</p>${chat.offer.status === "pending" ? `<button class="web-btn teal small" data-web-action="accept-offer">Accept offer (demo)</button>` : `<button class="web-btn small" data-web-action="continue-deal">Continue deal</button>`}</div>` : ""}${deal ? `<button class="web-btn outline" data-web-action="view-deal">${webIcon("shield", 16)} View deal progress</button>` : ""}</div><form id="web-chat-form" class="composer"><input class="field" name="message" placeholder="Type a message…" aria-label="Type a message" autocomplete="off"><button class="web-btn" type="submit" aria-label="Send message">${webIcon("send", 18)} Send</button></form></section>`;
 }
 function renderWebChats() {
   return webShell(
@@ -442,9 +444,11 @@ function renderWebDeal() {
   const steps =
     deal.fulfilment === "delivery" ? webDeliverySteps : webPickupSteps;
   const complete = deal.step >= steps.length - 1;
+  const quantity = Math.max(1, Number(deal.quantity) || 1);
+  const subtotal = deal.price * quantity;
   return webShell(
     `${pageHeading("Deal progress", complete ? "The demo transaction is complete." : "Track the agreement from creation through receipt.", `<button class="web-btn outline" data-web-go="chats">${webIcon("back", 17)} Messages</button>`)}` +
-      `<div class="deal-layout"><section class="panel deal-progress"><div class="deal-status"><b>${complete ? "Transaction complete" : "Protected demo deal active"}</b><p>${deal.payMethod === "cash" ? "Cash on pickup sits outside protected payment." : "The example payment is held until the buyer confirms receipt."}</p></div><div class="timeline">${steps.map((step, index) => `<div class="timeline-step ${index < deal.step ? "done" : index === deal.step ? "active" : ""}"><span class="timeline-dot">${index <= deal.step ? webIcon("check", 15) : index + 1}</span><span class="timeline-copy"><b>${webEscape(step)}</b><small>${index < deal.step ? "Demo stage completed" : index === deal.step ? "Current demo stage" : "Waiting for the next step"}</small></span></div>`).join("")}</div>${complete ? `<button class="web-btn teal" data-web-action="rate-deal">${deal.reviewed ? "Return to messages" : "Rate this transaction"}</button>` : `<button class="web-btn teal" data-web-action="advance-deal">Advance demo status ${webIcon("arrow", 17)}</button>`}</section><aside class="panel deal-summary"><img src="${webEscape(webImage(listing))}" alt="" style="width:100%;height:170px;object-fit:cover;border-radius:14px"><h2>${webEscape(listing.title)}</h2><div class="summary-row"><span>Material</span><b>${webMoney(deal.price)}</b></div><div class="summary-row"><span>Delivery</span><b>${deal.fulfilment === "delivery" ? webMoney(deal.deliveryFee) : "Self pickup"}</b></div><div class="summary-row"><span>Payment</span><b>${deal.payMethod === "cash" ? "Cash on pickup" : "Protected demo"}</b></div><p class="small muted">No real funds or delivery booking are created.</p></aside></div>`,
+      `<div class="deal-layout"><section class="panel deal-progress"><div class="deal-status"><b>${complete ? "Transaction complete" : "Protected demo deal active"}</b><p>${deal.payMethod === "cash" ? "Cash on pickup sits outside protected payment." : "The example payment is held until the buyer confirms receipt."}</p></div><div class="timeline">${steps.map((step, index) => `<div class="timeline-step ${index < deal.step ? "done" : index === deal.step ? "active" : ""}"><span class="timeline-dot">${index <= deal.step ? webIcon("check", 15) : index + 1}</span><span class="timeline-copy"><b>${webEscape(step)}</b><small>${index < deal.step ? "Demo stage completed" : index === deal.step ? "Current demo stage" : "Waiting for the next step"}</small></span></div>`).join("")}</div>${complete ? `<button class="web-btn teal" data-web-action="rate-deal">${deal.reviewed ? "Return to messages" : "Rate this transaction"}</button>` : `<button class="web-btn teal" data-web-action="advance-deal">Advance demo status ${webIcon("arrow", 17)}</button>`}</section><aside class="panel deal-summary"><img src="${webEscape(webImage(listing))}" alt="" style="width:100%;height:170px;object-fit:cover;border-radius:14px"><h2>${webEscape(listing.title)}</h2><div class="summary-row"><span>Unit price</span><b>${webMoney(deal.price)} / ${webEscape(listing.unit)}</b></div><div class="summary-row"><span>Quantity</span><b>${quantity} ${webEscape(listing.unit)}${quantity === 1 ? "" : "s"}</b></div><div class="summary-row"><span>Material subtotal</span><b>${webMoney(subtotal)}</b></div><div class="summary-row"><span>Delivery</span><b>${deal.fulfilment === "delivery" ? webMoney(deal.deliveryFee) : "Self pickup"}</b></div><div class="summary-row total"><span>Total example amount</span><b>${webMoney(subtotal + deal.deliveryFee)}</b></div><div class="summary-row"><span>Payment</span><b>${deal.payMethod === "cash" ? "Cash on pickup" : "Protected demo"}</b></div><p class="small muted">No real funds or delivery booking are created.</p></aside></div>`,
   );
 }
 
@@ -499,22 +503,31 @@ function goWeb(view) {
 }
 
 function dialogFrame(title, description, body, wide = false) {
-  return `<div class="dialog-scrim" data-web-action="close-dialog"><section class="dialog ${wide ? "wide" : ""}" role="dialog" aria-modal="true" aria-label="${webEscape(title)}" data-dialog-panel><button class="icon-button dialog-close" data-web-action="close-dialog" aria-label="Close">${webIcon("x", 18)}</button><h2>${webEscape(title)}</h2>${description ? `<p>${webEscape(description)}</p>` : ""}${body}</section></div>`;
+  return `<div class="dialog-scrim"><section class="dialog ${wide ? "wide" : ""}" role="dialog" aria-modal="true" aria-label="${webEscape(title)}" data-dialog-panel><button class="icon-button dialog-close" data-web-action="close-dialog" aria-label="Close">${webIcon("x", 18)}</button><h2>${webEscape(title)}</h2>${description ? `<p>${webEscape(description)}</p>` : ""}${body}</section></div>`;
 }
 function renderWebDialog() {
   const listing = webListing(webUI.selectedId);
+  const contextualOffer =
+    webUI.view === "chats" ? webChat(webUI.chatId)?.offer : null;
+  const available = listingAvailableQuantity(listing);
+  const purchaseQuantity = Math.min(
+    available,
+    Math.max(1, Math.floor(Number(webUI.quantity) || 1)),
+  );
+  const deliveryFee = webUI.fulfilment === "delivery" ? 350 : 0;
+  const offerPrice = Number(contextualOffer?.price || listing.price);
   switch (webUI.dialog) {
     case "offer":
       return dialogFrame(
         "Make an offer",
         `Send a demo offer for ${listing.title}.`,
-        `<form id="web-offer-form"><div class="field-group"><label class="field-label">Offer per ${webEscape(listing.unit)}</label><input class="field" name="price" type="number" min="1" value="${webEscape(listing.price)}" required></div><div class="field-group"><label class="field-label">Message (optional)</label><textarea class="textarea" name="note" placeholder="Pickup timing, quantity, or condition questions…"></textarea></div><div class="dialog-actions"><button class="web-btn outline" type="button" data-web-action="close-dialog">Cancel</button><button class="web-btn" type="submit">Send demo offer</button></div></form>`,
+        `<form id="web-offer-form"><div class="dialog-field-grid"><div class="field-group"><label class="field-label" for="web-offer-price">Offer per ${webEscape(listing.unit)}</label><input id="web-offer-price" class="field" name="price" type="number" min="1" value="${webEscape(offerPrice)}" required></div><div class="field-group"><label class="field-label" for="web-offer-quantity">Quantity</label><input id="web-offer-quantity" class="field" name="quantity" type="number" min="1" max="${available}" value="${purchaseQuantity}" required><small class="field-hint">${webEscape(listing.qty)} available</small></div></div><div class="dialog-summary"><div class="summary-row total"><span>Estimated material subtotal</span><b id="web-offer-subtotal">${webMoney(offerPrice * purchaseQuantity)}</b></div></div><div class="field-group"><label class="field-label">Message (optional)</label><textarea class="textarea" name="note" placeholder="Pickup timing or condition questions…"></textarea></div><div class="dialog-actions"><button class="web-btn outline" type="button" data-web-action="close-dialog">Cancel</button><button class="web-btn" type="submit">Send demo offer</button></div></form>`,
       );
     case "checkout":
       return dialogFrame(
         "Start a demo deal",
         "Choose collection and payment preferences. Nothing is charged or booked.",
-        `<form id="web-checkout-form"><h3>Pickup or delivery</h3><label class="option-row ${webUI.fulfilment === "pickup" ? "selected" : ""}"><input type="radio" name="fulfilment" value="pickup" ${webUI.fulfilment === "pickup" ? "checked" : ""}><span><b>Self-arranged pickup</b><small>Coordinate directly with the seller.</small></span></label><label class="option-row ${webUI.fulfilment === "delivery" ? "selected" : ""}"><input type="radio" name="fulfilment" value="delivery" ${webUI.fulfilment === "delivery" ? "checked" : ""}><span><b>Illustrative partner delivery · ${webMoney(350)}</b><small>Sample quote only; no courier is booked.</small></span></label><h3>Payment</h3><label class="option-row ${webUI.payMethod === "protected" ? "selected" : ""}"><input type="radio" name="payMethod" value="protected" ${webUI.payMethod === "protected" ? "checked" : ""}><span><b>Protected demo payment</b><small>Shown as held until receipt is confirmed.</small></span></label><label class="option-row ${webUI.payMethod === "cash" ? "selected" : ""}"><input type="radio" name="payMethod" value="cash" ${webUI.payMethod === "cash" ? "checked" : ""}><span><b>Cash on pickup</b><small>Outside BuildCycle payment protection.</small></span></label><div class="summary-row"><span>Material</span><b>${webMoney(listing.price)} / ${webEscape(listing.unit)}</b></div><div class="dialog-actions"><button class="web-btn outline" type="button" data-web-action="close-dialog">Cancel</button><button class="web-btn teal" type="submit">Create demo deal</button></div></form>`,
+        `<form id="web-checkout-form"><div class="field-group"><label class="field-label" for="web-checkout-quantity">Quantity to buy</label><input id="web-checkout-quantity" class="field" name="quantity" type="number" min="1" max="${available}" value="${purchaseQuantity}" required><small class="field-hint">Choose up to ${available} ${webEscape(listing.unit)}${available === 1 ? "" : "s"}.</small></div><h3>Pickup or delivery</h3><label class="option-row ${webUI.fulfilment === "pickup" ? "selected" : ""}"><input type="radio" name="fulfilment" value="pickup" ${webUI.fulfilment === "pickup" ? "checked" : ""}><span><b>Self-arranged pickup</b><small>Coordinate directly with the seller.</small></span></label><label class="option-row ${webUI.fulfilment === "delivery" ? "selected" : ""}"><input type="radio" name="fulfilment" value="delivery" ${webUI.fulfilment === "delivery" ? "checked" : ""}><span><b>Illustrative partner delivery · ${webMoney(350)}</b><small>Sample quote only; no courier is booked.</small></span></label><h3>Payment</h3><label class="option-row ${webUI.payMethod === "protected" ? "selected" : ""}"><input type="radio" name="payMethod" value="protected" ${webUI.payMethod === "protected" ? "checked" : ""}><span><b>Protected demo payment</b><small>Shown as held until receipt is confirmed.</small></span></label><label class="option-row ${webUI.payMethod === "cash" ? "selected" : ""}"><input type="radio" name="payMethod" value="cash" ${webUI.payMethod === "cash" ? "checked" : ""}><span><b>Cash on pickup</b><small>Outside BuildCycle payment protection.</small></span></label><div class="dialog-summary"><div class="summary-row"><span>Unit price</span><b>${webMoney(listing.price)} / ${webEscape(listing.unit)}</b></div><div class="summary-row"><span>Material subtotal</span><b id="web-checkout-subtotal">${webMoney(listing.price * purchaseQuantity)}</b></div><div class="summary-row"><span>Delivery</span><b id="web-checkout-delivery">${deliveryFee ? webMoney(deliveryFee) : "₱0"}</b></div><div class="summary-row total"><span>Total example amount</span><b id="web-checkout-total">${webMoney(listing.price * purchaseQuantity + deliveryFee)}</b></div></div><div class="dialog-actions"><button class="web-btn outline" type="button" data-web-action="close-dialog">Cancel</button><button class="web-btn teal" type="submit">Create demo deal</button></div></form>`,
         true,
       );
     case "edit-profile":
@@ -617,15 +630,21 @@ function startWebDeal(
   listing,
   {
     price = listing.price,
+    quantity = 1,
     fulfilment = "pickup",
     payMethod = "protected",
     chatId = null,
   } = {},
 ) {
+  const dealQuantity = Math.min(
+    listingAvailableQuantity(listing),
+    Math.max(1, Math.floor(Number(quantity) || 1)),
+  );
   const previous = webData.deals.find(
     (deal) =>
       deal.listingId === listing.id &&
       deal.chatId === chatId &&
+      Math.max(1, Number(deal.quantity) || 1) === dealQuantity &&
       deal.step <
         (deal.fulfilment === "delivery"
           ? webDeliverySteps
@@ -643,6 +662,7 @@ function startWebDeal(
     listingId: listing.id,
     chatId,
     price: Number(price),
+    quantity: dealQuantity,
     fulfilment,
     payMethod,
     deliveryFee: fulfilment === "delivery" ? 350 : 0,
@@ -675,6 +695,7 @@ document.addEventListener("click", (event) => {
   }
   if (element.dataset.webListing) {
     webUI.selectedId = element.dataset.webListing;
+    webUI.quantity = 1;
     goWeb("detail");
     return;
   }
@@ -702,6 +723,14 @@ document.addEventListener("click", (event) => {
     ) {
       webToast("Open another seller’s listing for the buyer demo.");
       return;
+    }
+    if (["offer", "checkout"].includes(element.dataset.webDialog)) {
+      const contextualOffer =
+        webUI.view === "chats" ? webChat(webUI.chatId)?.offer : null;
+      webUI.quantity = Math.min(
+        listingAvailableQuantity(webListing(webUI.selectedId)),
+        Math.max(1, Math.floor(Number(contextualOffer?.quantity) || 1)),
+      );
     }
     openWebDialog(element.dataset.webDialog, element);
     return;
@@ -786,6 +815,7 @@ document.addEventListener("click", (event) => {
     const chat = webChat(webUI.chatId);
     startWebDeal(webListing(chat.listingId), {
       price: chat.offer?.price,
+      quantity: chat.offer?.quantity || 1,
       fulfilment: chat.offer?.fulfilment || "pickup",
       chatId: chat.id,
     });
@@ -853,6 +883,7 @@ document.addEventListener("click", (event) => {
       chatTab: "All Chats",
       chatSearch: "",
       dialog: null,
+      quantity: 1,
       dealId: null,
       photo: null,
       editId: null,
@@ -874,6 +905,47 @@ document.addEventListener("input", (event) => {
     webUI.chatSearch = event.target.value;
     const list = document.getElementById("web-chat-list");
     if (list) list.innerHTML = webChatListMarkup();
+    return;
+  }
+  if (
+    ["web-offer-price", "web-offer-quantity", "web-checkout-quantity"].includes(
+      event.target.id,
+    )
+  ) {
+    if (event.target.id !== "web-offer-price") {
+      webUI.quantity = Math.min(
+        listingAvailableQuantity(webListing(webUI.selectedId)),
+        Math.max(1, Math.floor(Number(event.target.value) || 1)),
+      );
+    }
+    const listing = webListing(webUI.selectedId);
+    const price = Number(
+      document.getElementById("web-offer-price")?.value || listing.price,
+    );
+    const subtotal = document.getElementById("web-offer-subtotal");
+    if (subtotal)
+      subtotal.textContent = webMoney(
+        (Number.isFinite(price) && price > 0 ? price : listing.price) *
+          webUI.quantity,
+      );
+    const checkoutSubtotal = document.getElementById(
+      "web-checkout-subtotal",
+    );
+    const checkoutDelivery = document.getElementById(
+      "web-checkout-delivery",
+    );
+    const checkoutTotal = document.getElementById("web-checkout-total");
+    const deliveryFee = webUI.fulfilment === "delivery" ? 350 : 0;
+    if (checkoutSubtotal)
+      checkoutSubtotal.textContent = webMoney(
+        listing.price * webUI.quantity,
+      );
+    if (checkoutDelivery)
+      checkoutDelivery.textContent = deliveryFee ? webMoney(deliveryFee) : "₱0";
+    if (checkoutTotal)
+      checkoutTotal.textContent = webMoney(
+        listing.price * webUI.quantity + deliveryFee,
+      );
   }
 });
 document.addEventListener("change", (event) => {
@@ -886,6 +958,8 @@ document.addEventListener("change", (event) => {
     event.target.closest("#web-checkout-form") &&
     event.target.name === "fulfilment"
   ) {
+    const quantityInput = document.getElementById("web-checkout-quantity");
+    if (quantityInput) webUI.quantity = Number(quantityInput.value) || 1;
     webUI.fulfilment = event.target.value;
     webDialogRoot.innerHTML = renderWebDialog();
     return;
@@ -894,6 +968,8 @@ document.addEventListener("change", (event) => {
     event.target.closest("#web-checkout-form") &&
     event.target.name === "payMethod"
   ) {
+    const quantityInput = document.getElementById("web-checkout-quantity");
+    if (quantityInput) webUI.quantity = Number(quantityInput.value) || 1;
     webUI.payMethod = event.target.value;
     webDialogRoot.innerHTML = renderWebDialog();
     return;
@@ -985,12 +1061,26 @@ document.addEventListener("submit", (event) => {
   if (form.id === "web-offer-form") {
     const listing = webListing(webUI.selectedId);
     const price = Number(values.price);
-    if (!Number.isFinite(price) || price <= 0) return;
+    const quantity = Math.floor(Number(values.quantity));
+    if (!Number.isFinite(price) || price <= 0) {
+      webToast("Enter a valid peso amount.");
+      return;
+    }
+    if (
+      !Number.isFinite(quantity) ||
+      quantity < 1 ||
+      quantity > listingAvailableQuantity(listing)
+    ) {
+      webToast(
+        `Choose between 1 and ${listingAvailableQuantity(listing)} units.`,
+      );
+      return;
+    }
     const chat = currentWebChat(listing);
-    chat.offer = { price, fulfilment: "pickup", status: "pending" };
+    chat.offer = { price, quantity, fulfilment: "pickup", status: "pending" };
     chat.messages.push({
       mine: true,
-      text: `I would like to offer ${webMoney(price)} per ${listing.unit}. ${String(values.note || "").trim()}`.trim(),
+      text: `I would like to offer ${webMoney(price)} per ${listing.unit} for ${quantity} ${listing.unit}${quantity === 1 ? "" : "s"}. ${String(values.note || "").trim()}`.trim(),
       time: "Now",
     });
     chat.last = "Offer sent";
@@ -1002,7 +1092,20 @@ document.addEventListener("submit", (event) => {
     return;
   }
   if (form.id === "web-checkout-form") {
-    startWebDeal(webListing(webUI.selectedId), {
+    const listing = webListing(webUI.selectedId);
+    const quantity = Math.floor(Number(values.quantity));
+    if (
+      !Number.isFinite(quantity) ||
+      quantity < 1 ||
+      quantity > listingAvailableQuantity(listing)
+    ) {
+      webToast(
+        `Choose between 1 and ${listingAvailableQuantity(listing)} units.`,
+      );
+      return;
+    }
+    startWebDeal(listing, {
+      quantity,
       fulfilment: values.fulfilment,
       payMethod: values.payMethod,
       chatId: webUI.view === "chats" ? webUI.chatId : null,
@@ -1040,6 +1143,7 @@ document.addEventListener("submit", (event) => {
       price,
       unit: String(values.unit),
       qty: String(values.qty).trim(),
+      availableQty: listingAvailableQuantity({ qty: values.qty }),
       location: String(values.location).trim(),
       distance: existing?.distance || 0,
       image: webUI.photo || existing?.image || fallback,

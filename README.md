@@ -21,7 +21,7 @@ node tests/smoke-test.js
 node tests/web-smoke-test.js
 ```
 
-The checks cover direct-file compatibility, saved-data migration, shared mobile/web data, search recovery, saved-item feedback, chat search, dialog keyboard behavior and stylesheet structure.
+The checks cover direct-file compatibility, saved-data migration, shared mobile/web data, quantity-based deal totals, search recovery, saved-item feedback, chat search, stable dialog behavior and stylesheet structure.
 
 For a quick presentation check, use a narrow/mobile viewport and follow this path:
 
@@ -32,9 +32,10 @@ For a quick presentation check, use a narrow/mobile viewport and follow this pat
 5. Save a listing. Its heart should fill red immediately; the count beside **Profile → Saved Items** should increase and the page should contain that listing. Tap the heart again to confirm both update.
 6. In **Chats**, tap the search icon and search for `Marcus` or `lumber`. Confirm only the relevant conversation remains, then close the search field.
 7. Open any Profile sheet such as **Settings**. Press `Escape` on a hardware keyboard: the sheet should close and focus should return to the button that opened it.
-8. Open Marcus's chat, send a message, create or accept an offer, continue to a deal and advance every stage. The progress icons should remain behind the sticky action button.
-9. In **Sell**, enter a title and location, then use **Suggest description**. Confirm the sentence contains the actual location and no template-code text such as `data.user.location`.
-10. Use **Profile → Reset Demo Marketplace** and confirm starter listings, chats, saved items and deals reset while the signed-in profile remains.
+8. Open a listing with multiple units available. In **Make Offer** and **Buy / Deal**, choose a smaller quantity and confirm the material subtotal and total update. Carry an accepted offer into a deal and confirm the same quantity appears in chat and the deal summary.
+9. Open Marcus's chat, send a message, accept an offer, continue to a deal and advance every stage. The progress icons should remain behind the sticky action button.
+10. In **Sell**, enter a title and location, then use **Suggest description**. Confirm the sentence contains the actual location and no template-code text such as `data.user.location`.
+11. Use **Profile → Reset Demo Marketplace** and confirm starter listings, chats, saved items and deals reset while the signed-in profile remains.
 
 For the desktop handoff, open the web page beside the mobile page from the same server. Save or post an item in one layout and confirm the other open tab updates automatically; the catalog and activity should agree. A newly opened tab also loads the latest shared browser state.
 
@@ -43,8 +44,8 @@ You can switch layouts from inside the prototype using the dedicated **Try the W
 ## Try the full flow
 
 1. Enter a sample location, then log in with any valid email and any password; or create a demo account.
-2. Search materials and filter by category, distance, condition or maximum unit price. Open a listing, save it, message the seller or make an offer.
-3. In chat, send a message, accept the example offer and continue to a deal. Or use **Buy / Deal** directly from a listing.
+2. Search materials and filter by category, distance, condition or maximum unit price. Open a listing, save it, message the seller or make an offer for a chosen quantity up to the available stock.
+3. In chat, send a message, accept the example offer and continue to a deal. Or use **Buy / Deal** directly from a listing; the quantity, material subtotal, delivery and example total remain visible throughout.
 4. Choose self-arranged pickup or an illustrative partner delivery quote. Pick simulated protected payment or cash on pickup, then advance the example tracking stages and rate the transaction.
 5. Use the central **Sell** button to create a listing. Upload one local photo or leave it blank to use a supplied material photo, edit the example AI wording, and post. View and edit it under **Profile → My Listings**.
 
@@ -52,7 +53,7 @@ The supplied material images are bundled in `assets/`. Extra demo listings reuse
 
 ## Demo boundaries
 
-This is an interactive visual prototype. Authentication, social login, seller verification, AI text assistance, protected payment, delivery quotes/tracking, notifications and seller replies are simulated. No real account, charge, courier booking, device location lookup or external API request occurs. **Enable Location** continues with the sample Bohol place; the manual option lets you type another display location. Cash on pickup is shown outside protected payment. The sample commission and premium figures are illustrative only.
+This is an interactive visual prototype. Authentication, social login, seller verification, AI text assistance, protected payment, delivery quotes/tracking, notifications and seller replies are simulated. No real account, charge, courier booking, device location lookup or external API request occurs. Selected quantities are recorded on the local demo deal, but stock is not reserved or reduced across buyers. **Enable Location** continues with the sample Bohol place; the manual option lets you type another display location. Cash on pickup is shown outside protected payment. The sample commission and premium figures are illustrative only.
 
 ## Files
 

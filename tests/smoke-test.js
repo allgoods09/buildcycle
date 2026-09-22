@@ -131,6 +131,27 @@ const input = (id, value) =>
   assert.equal(vm.runInContext("data.user.location", context), "Tubigon, Bohol");
   assert.equal(JSON.parse(storage.get("buildcycle-demo-v2")).version, 3);
 
+  assert.equal(
+    vm.runInContext('listingAvailableQuantity(getListing("blocks"))', context),
+    200,
+  );
+  vm.runInContext(
+    'ui.selectedId = "blocks"; ui.quantity = 20; ui.sheet = "checkout";',
+    context,
+  );
+  const quantityCheckout = vm.runInContext("renderSheet()", context);
+  assert.match(quantityCheckout, /name="quantity"/);
+  assert.match(quantityCheckout, /max="200"/);
+  assert.match(quantityCheckout, /₱360/);
+  vm.runInContext(
+    'ui.sheet = null; startDeal(getListing("blocks"), { quantity: 20, price: 18 });',
+    context,
+  );
+  assert.equal(vm.runInContext("data.deals[0].quantity", context), 20);
+  assert.match(vm.runInContext("renderDeal()", context), /Material subtotal/);
+  assert.match(vm.runInContext("renderDeal()", context), /₱360/);
+  vm.runInContext('goto("home")', context);
+
   const onboarding = vm.runInContext("renderOnboarding()", context);
   assert.match(onboarding, /progress-dots single/);
   assert.equal((onboarding.match(/<span/g) || []).length, 1);
@@ -200,7 +221,7 @@ const input = (id, value) =>
   }
 
   console.log(
-    "BuildCycle smoke test passed: boot, migration, search, save, chat, sheets, and assets.",
+    "BuildCycle smoke test passed: boot, migration, quantity deals, search, save, chat, sheets, and assets.",
   );
 })().catch((error) => {
   console.error(error);

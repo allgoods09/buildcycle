@@ -107,6 +107,7 @@ assert.doesNotMatch(app.innerHTML, /12mm deformed steel bars/);
 click({ webGo: "search" });
 assert.equal((app.innerHTML.match(/class="listing-card"/g) || []).length, 8);
 click({ webSave: "tiles" });
+assert.match(app.innerHTML, /save-button saved/);
 click({ webGo: "profile" });
 assert.match(app.innerHTML, /Saved items<\/span><b>1<\/b>/);
 assert.match(app.innerHTML, /data-web-dialog="settings"/);
@@ -124,6 +125,7 @@ assert.doesNotMatch(getNode("web-chat-list").innerHTML, /Jessa M\./);
 vm.runInContext(`webUI.selectedId = "lumber"; goWeb("detail")`, context);
 const opener = click({ webDialog: "offer" });
 assert.match(overlay.innerHTML, /role="dialog"/);
+assert.doesNotMatch(overlay.innerHTML, /dialog-scrim" data-web-action/);
 assert.equal(document.activeElement, dialogClose);
 let prevented = false;
 listeners.keydown({
@@ -136,6 +138,22 @@ assert.equal(prevented, true);
 assert.equal(overlay.innerHTML, "");
 assert.equal(document.activeElement, opener);
 
+vm.runInContext(
+  'webUI.selectedId = "blocks"; webUI.quantity = 20; webUI.dialog = "checkout";',
+  context,
+);
+const quantityCheckout = vm.runInContext("renderWebDialog()", context);
+assert.match(quantityCheckout, /name="quantity"/);
+assert.match(quantityCheckout, /max="200"/);
+assert.match(quantityCheckout, /₱360/);
+vm.runInContext(
+  'webUI.dialog = null; startWebDeal(webListing("blocks"), { quantity: 20, price: 18 });',
+  context,
+);
+assert.equal(vm.runInContext("webData.deals[0].quantity", context), 20);
+assert.match(vm.runInContext("renderWebDeal()", context), /Material subtotal/);
+assert.match(vm.runInContext("renderWebDeal()", context), /₱360/);
+
 const html = read("BuildCycle_Web.html");
 assert.match(html, /js\/demo-data\.js/);
 assert.match(html, /js\/web-app\.js/);
@@ -146,5 +164,5 @@ assert.ok(
 assert.equal(typeof windowListeners.storage, "function");
 
 console.log(
-  "BuildCycle web smoke test passed: shared data, search, save, chat, and dialog behavior.",
+  "BuildCycle web smoke test passed: shared data, quantity deals, search, save, chat, and stable dialogs.",
 );

@@ -493,6 +493,41 @@
 .deal-meta span{
   color:var(--muted)
 }
+.field-hint{
+  display:block;
+  margin-top:6px;
+  color:var(--muted);
+  font-size:11px
+}
+.purchase-summary{
+  margin:12px 0 16px;
+  padding:5px 14px;
+  border:1px solid #dceae8;
+  border-radius:15px;
+  background:#f4faf9
+}
+.purchase-summary>div{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  padding:10px 0;
+  border-bottom:1px solid #deebe9;
+  font-size:13px
+}
+.purchase-summary>div:last-child{
+  border-bottom:0
+}
+.purchase-summary span{
+  color:var(--muted)
+}
+.purchase-summary .purchase-total{
+  color:var(--navy);
+  font-size:14px
+}
+.offer-fulfilment{
+  display:block;
+  margin-top:4px
+}
 .timeline{
   margin:24px 0
 }

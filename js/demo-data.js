@@ -2,6 +2,12 @@
 const ASSET = "assets/";
 const STORAGE_KEY = "buildcycle-demo-v2";
 const STATE_VERSION = 3;
+const listingAvailableQuantity = (listing) => {
+  const explicit = Number(listing?.availableQty);
+  const parsed = Number.parseFloat(String(listing?.qty || "").replace(/,/g, ""));
+  const quantity = Number.isFinite(explicit) && explicit > 0 ? explicit : parsed;
+  return Math.max(1, Math.floor(Number.isFinite(quantity) ? quantity : 1));
+};
 const defaultListings = [
   {
     id: "tiles",
