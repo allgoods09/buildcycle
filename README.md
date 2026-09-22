@@ -1,6 +1,6 @@
 # BuildCycle interactive prototype
 
-A mobile-first, standalone HTML/CSS/JavaScript demo based on the supplied Figma screen images and material photos. Open it on a phone-sized browser window or use the desktop phone preview. All prices are in Philippine pesos, with Bohol sample locations.
+A mobile-first, standalone HTML/CSS/JavaScript demo based on the supplied Figma screen images and material photos. Open it on a phone-sized browser window or use the desktop phone preview. All prices are in Philippine pesos, with Bohol sample locations. test
 
 ## Run it
 
