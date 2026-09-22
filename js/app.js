@@ -1,6 +1,4 @@
 /* BuildCycle pitch prototype. All accounts, AI, messages, payments and delivery are simulated. */
-const ASSET = "assets/";
-const STORAGE_KEY = "buildcycle-demo-v2";
 const money = (n) =>
   new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -15,298 +13,54 @@ const escapeHtml = (value) =>
         c
       ],
   );
-const defaultListings = [
-  {
-    id: "tiles",
-    title: "Ceramic Floor Tiles — Sealed Boxes",
-    category: "Tiles",
-    condition: "Unused surplus",
-    tag: "Available",
-    price: 45,
-    unit: "pc",
-    qty: "40 pieces",
-    location: "Tubigon, Bohol",
-    distance: 2,
-    image: "tiles.png",
-    seller: "Jessa M.",
-    rating: "4.8",
-    description:
-      "Clean white floor tiles left from a residential build. Still boxed and ready for pickup. Suitable for kitchens and bathrooms.",
-    specs: [
-      ["QUANTITY", "40 pieces"],
-      ["SIZE", "30 × 30 cm"],
-      ["COLOR", "Ivory"],
-      ["CONDITION", "Unused surplus"],
-    ],
-    mine: false,
-  },
-  {
-    id: "rebar",
-    title: "Surplus Steel Rebar — 10 mm",
-    category: "Steel & Metal",
-    condition: "Unused surplus",
-    tag: "Surplus",
-    price: 48,
-    unit: "kg",
-    qty: "120 kg",
-    location: "Calape, Bohol",
-    distance: 8,
-    image: "rebar.png",
-    seller: "Juan Dela Cruz",
-    rating: "4.8",
-    description:
-      "Straight 10 mm reinforcing bars left over from a building project. Stored off the ground and ready for pickup.",
-    specs: [
-      ["QUANTITY", "120 kg"],
-      ["DIAMETER", "10 mm"],
-      ["GRADE", "Construction"],
-      ["CONDITION", "Unused surplus"],
-    ],
-    mine: true,
-  },
-  {
-    id: "cement",
-    title: "Cement Bags — Unopened",
-    category: "Cement & Concrete",
-    condition: "New",
-    tag: "New",
-    price: 220,
-    unit: "bag",
-    qty: "15 bags",
-    location: "Tubigon, Bohol",
-    distance: 1,
-    image: "cement.png",
-    seller: "Rico P.",
-    rating: "4.7",
-    description:
-      "Unopened bags of Portland cement, stored in a covered dry area. Available as a full set or by bag.",
-    specs: [
-      ["QUANTITY", "15 bags"],
-      ["WEIGHT", "40 kg / bag"],
-      ["STORAGE", "Covered"],
-      ["CONDITION", "New"],
-    ],
-    mine: false,
-  },
-  {
-    id: "lumber",
-    title: "Reclaimed Hardwood Planks — Bulk Set",
-    category: "Lumber",
-    condition: "Reclaimed",
-    tag: "Recycled",
-    price: 450,
-    unit: "board",
-    qty: "45 planks",
-    location: "Clarin, Bohol",
-    distance: 11,
-    image: "lumber.png",
-    seller: "Marcus D.",
-    rating: "4.9",
-    description:
-      "A set of approximately 45 reclaimed hardwood planks from a warehouse renovation. Surface cleaned and ready for another project. Great for flooring, furniture or accent walls.",
-    specs: [
-      ["QUANTITY", "45 planks"],
-      ["LENGTH", "8–12 ft"],
-      ["THICKNESS", "2 inches"],
-      ["CONDITION", "Reclaimed"],
-    ],
-    mine: false,
-  },
-  {
-    id: "blocks",
-    title: "Concrete Hollow Blocks — Bulk Lot",
-    category: "Cement & Concrete",
-    condition: "Like new",
-    tag: "Available",
-    price: 18,
-    unit: "pc",
-    qty: "200 pieces",
-    location: "Tubigon, Bohol",
-    distance: 3,
-    image: "blocks.png",
-    seller: "Juan Dela Cruz",
-    rating: "4.8",
-    description:
-      "Standard hollow blocks from a surplus site order. Pickup can be arranged in smaller batches.",
-    specs: [
-      ["QUANTITY", "200 pieces"],
-      ["SIZE", "Standard"],
-      ["PICKUP", "Flexible"],
-      ["CONDITION", "Like new"],
-    ],
-    mine: true,
-  },
-  {
-    id: "plywood",
-    title: "Structural Plywood Sheets",
-    category: "Lumber",
-    condition: "Unused surplus",
-    tag: "Surplus",
-    price: 590,
-    unit: "sheet",
-    qty: "24 sheets",
-    location: "Tagbilaran, Bohol",
-    distance: 43,
-    image: "plywood.png",
-    seller: "Juan Dela Cruz",
-    rating: "4.8",
-    description:
-      "Surplus construction plywood, neatly stored on pallets. Great for partitions, cabinets or formwork.",
-    specs: [
-      ["QUANTITY", "24 sheets"],
-      ["SIZE", "4 × 8 ft"],
-      ["THICKNESS", "12 mm"],
-      ["CONDITION", "Unused surplus"],
-    ],
-    mine: true,
-  },
-  {
-    id: "wire",
-    title: "Electrical Wire — Leftover Roll",
-    category: "Electrical",
-    condition: "Unused surplus",
-    tag: "Available",
-    price: 24,
-    unit: "meter",
-    qty: "50 meters",
-    location: "Calape, Bohol",
-    distance: 7,
-    image: "wire.png",
-    seller: "Juan Dela Cruz",
-    rating: "4.8",
-    description:
-      "Leftover insulated electrical wire. Buyer may inspect before accepting the material.",
-    specs: [
-      ["QUANTITY", "50 meters"],
-      ["TYPE", "Insulated"],
-      ["PICKUP", "Calape"],
-      ["CONDITION", "Unused surplus"],
-    ],
-    mine: true,
-  },
-  {
-    id: "timber",
-    title: "Reclaimed Framing Timber",
-    category: "Lumber",
-    condition: "Reclaimed",
-    tag: "Recycled",
-    price: 85,
-    unit: "board",
-    qty: "65 boards",
-    location: "Tubigon, Bohol",
-    distance: 4,
-    image: "lumber.png",
-    seller: "Ana V.",
-    rating: "4.6",
-    description:
-      "Reclaimed framing timber in mixed lengths. Perfect for a smaller build or furniture project.",
-    specs: [
-      ["QUANTITY", "65 boards"],
-      ["LENGTH", "Mixed"],
-      ["MATERIAL", "Hardwood"],
-      ["CONDITION", "Reclaimed"],
-    ],
-    mine: false,
-  },
-];
-const defaultChats = [
-  {
-    id: "marcus",
-    name: "Marcus D.",
-    listingId: "lumber",
-    type: "buying",
-    last: "We can arrange pickup tomorrow afternoon.",
-    time: "9:20 AM",
-    online: true,
-    messages: [
-      {
-        mine: false,
-        text: "Hi there! Yes, the reclaimed planks are still available. How many are you looking for?",
-        time: "9:12 AM",
-      },
-      {
-        mine: true,
-        text: "I’m interested in the full bulk set. Is the price firm?",
-        time: "9:15 AM",
-      },
-      {
-        mine: false,
-        text: "For the full set, I could do ₱420 per board if you can pick it up tomorrow.",
-        time: "9:18 AM",
-      },
-      {
-        mine: true,
-        text: "That works. I’ll check delivery options.",
-        time: "9:20 AM",
-      },
-    ],
-  },
-  {
-    id: "jessa",
-    name: "Jessa M.",
-    listingId: "tiles",
-    type: "buying",
-    last: "Yes, the tiles are still available!",
-    time: "Yesterday",
-    online: true,
-    messages: [
-      {
-        mine: false,
-        text: "Yes, the tiles are still available!",
-        time: "Yesterday",
-      },
-    ],
-  },
-  {
-    id: "rico",
-    name: "Rico P.",
-    listingId: "cement",
-    type: "buying",
-    last: "You can inspect the bags before pickup.",
-    time: "Wed",
-    online: false,
-    messages: [
-      {
-        mine: false,
-        text: "You can inspect the bags before pickup.",
-        time: "Wed",
-      },
-    ],
-  },
-  {
-    id: "buyer",
-    name: "Mika L.",
-    listingId: "rebar",
-    type: "selling",
-    last: "Is 120 kg still available?",
-    time: "Mon",
-    online: false,
-    messages: [
-      { mine: false, text: "Is 120 kg still available?", time: "Mon" },
-    ],
-  },
-];
-const freshState = () => ({
-  onboarded: false,
-  authed: false,
-  user: {
-    name: "Juan Dela Cruz",
-    email: "demo@buildcycle.ph",
-    location: "Tubigon, Bohol",
-  },
-  listings: structuredClone(defaultListings),
-  chats: structuredClone(defaultChats),
-  saved: [],
-  deals: [],
-  reviews: [],
-});
 let stored;
 try {
   stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
 } catch {
   stored = null;
 }
-let data = stored && Array.isArray(stored.listings) ? stored : freshState();
+function hydrateState(value) {
+  const base = freshState();
+  if (!value || typeof value !== "object") return base;
+  const savedUser =
+    value.user && typeof value.user === "object" ? value.user : {};
+  const listings = Array.isArray(value.listings)
+    ? value.listings.filter(
+        (listing) => listing && typeof listing.id === "string",
+      )
+    : base.listings;
+  const chats = Array.isArray(value.chats)
+    ? value.chats
+        .filter((chat) => chat && typeof chat.id === "string")
+        .map((chat) => ({
+          ...chat,
+          messages: Array.isArray(chat.messages) ? chat.messages : [],
+        }))
+    : base.chats;
+  return {
+    ...base,
+    ...value,
+    version: STATE_VERSION,
+    user: {
+      name:
+        typeof savedUser.name === "string" ? savedUser.name : base.user.name,
+      email:
+        typeof savedUser.email === "string" ? savedUser.email : base.user.email,
+      location:
+        typeof savedUser.location === "string"
+          ? savedUser.location
+          : base.user.location,
+    },
+    listings: listings.length ? listings : base.listings,
+    chats,
+    saved: Array.isArray(value.saved)
+      ? value.saved.filter((id) => typeof id === "string")
+      : [],
+    deals: Array.isArray(value.deals) ? value.deals : [],
+    reviews: Array.isArray(value.reviews) ? value.reviews : [],
+  };
+}
+let data = hydrateState(stored);
 let ui = {
   screen: data.onboarded ? (data.authed ? "home" : "login") : "onboarding",
   history: [],
@@ -319,6 +73,8 @@ let ui = {
   distance: "Any",
   maxPrice: "",
   chatTab: "All Chats",
+  chatSearchOpen: false,
+  chatSearch: "",
   myTab: "Active",
   sheet: null,
   photo: null,
@@ -340,6 +96,7 @@ const app = document.getElementById("app");
 const overlayRoot = document.getElementById("overlay-root");
 const toastRoot = document.getElementById("toast-root");
 let toastTimer;
+let sheetTrigger = null;
 function persist() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -353,6 +110,7 @@ function toast(message) {
   toastRoot.innerHTML = `<div class="toast">${escapeHtml(message)}</div>`;
   toastTimer = setTimeout(() => toastRoot.replaceChildren(), 3100);
 }
+if (stored) persist();
 function icon(name, size = 20) {
   const paths = {
     home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
@@ -382,6 +140,8 @@ function icon(name, size = 20) {
     card: '<rect x="2" y="5" width="20" height="15" rx="2"/><path d="M2 10h20"/>',
     settings:
       '<circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/>',
+    refresh:
+      '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',
     help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.4 1.6c-1 1-2 1.3-2 3M12 17h.01"/>',
     logout: '<path d="M10 3H4v18h6m4-13 5 4-5 4M8 12h11"/>',
     chevron: '<path d="m9 5 7 7-7 7"/>',
@@ -452,27 +212,36 @@ function featureCard(l) {
 }
 function productCard(l) {
   const saved = data.saved.includes(l.id);
-  return `<article class="product-card"><button class="heart-float ${saved ? "saved" : ""}" data-save="${escapeHtml(l.id)}" aria-label="${saved ? "Remove from saved" : "Save listing"}">${icon("heart", 17)}</button><button data-open-listing="${escapeHtml(l.id)}" style="border:0;background:none;padding:0;text-align:left;width:100%;color:inherit"><img src="${escapeHtml(imagePath(l))}" alt="${escapeHtml(l.title)}"><span class="details" style="display:block">${badge(l.tag)}<span class="title">${escapeHtml(l.title)}</span><span class="price">${money(l.price)}<small style="font-size:12px">/${escapeHtml(l.unit)}</small></span><span class="meta">${icon("pin", 12)}${escapeHtml(l.distance)} km away</span></span></button></article>`;
+  return `<article class="product-card"><button class="heart-float ${saved ? "saved" : ""}" data-save="${escapeHtml(l.id)}" aria-label="${saved ? "Remove from saved items" : "Save listing"}" aria-pressed="${saved}">${icon("heart", 17)}</button><button data-open-listing="${escapeHtml(l.id)}" style="border:0;background:none;padding:0;text-align:left;width:100%;color:inherit"><img src="${escapeHtml(imagePath(l))}" alt="${escapeHtml(l.title)}"><span class="details" style="display:block">${badge(l.tag)}<span class="title">${escapeHtml(l.title)}</span><span class="price">${money(l.price)}<small style="font-size:12px">/${escapeHtml(l.unit)}</small></span><span class="meta">${icon("pin", 12)}${escapeHtml(l.distance)} km away</span></span></button></article>`;
 }
 function renderOnboarding() {
-  return `<main class="screen onboarding"><div class="onboarding-top"><div class="progress-dots"><span></span><span class="active"></span><span></span></div><button class="btn link muted" data-action="onboard-skip">Skip</button></div><div class="onboard-art"><div class="art-core"><img src="assets/logo.png" alt="BuildCycle mark"></div></div><h1>Find Materials Nearby</h1><p>Explore construction materials available for pickup in your area and save on transport.</p><div class="onboarding-actions"><button class="btn primary full" data-action="enable-location">${icon("pin", 20)} Enable Location</button><button class="btn link full" data-sheet="location">Enter location manually</button><small>${icon("shield", 12)} Your location is only used to find local materials.</small></div></main>`;
+  return `<main class="screen onboarding"><div class="onboarding-top"><div class="progress-dots single" aria-label="Welcome"><span class="active"></span></div><button class="btn link muted" data-action="onboard-skip">Skip</button></div><div class="onboard-art"><div class="art-core"><img src="assets/logo.png" alt="BuildCycle mark"></div></div><h1>Find Materials Nearby</h1><p>Explore construction materials available for pickup in your area and save on transport.</p><div class="onboarding-actions"><button class="btn primary full" data-action="enable-location">${icon("pin", 20)} Enable Location</button><button class="btn link full" data-sheet="location">Enter location manually</button><small>${icon("shield", 12)} Your location is only used to find local materials.</small></div></main>`;
 }
 function renderLogin() {
-  return `<main class="screen auth-screen"><section class="auth-hero"><img src="assets/logo.png" alt="BuildCycle logo"><h1>BuildCycle</h1><p>Welcome back to the marketplace</p></section><form id="login-form" class="auth-card"><div class="form-group"><label for="login-email" class="field-label">Email Address</label><div class="input-with-icon"><span class="lead">${icon("user", 18)}</span><input class="field" type="email" id="login-email" name="email" placeholder="you@example.com" value="${escapeHtml(data.user.email)}" required autocomplete="email"></div></div><div class="form-group"><div style="display:flex;justify-content:space-between"><label for="login-pass" class="field-label">Password</label><button type="button" class="text-link small" data-sheet="forgot">FORGOT?</button></div><div class="input-with-icon"><span class="lead">${icon("lock", 18)}</span><input class="field" type="password" id="login-pass" name="password" placeholder="Enter any demo password" value="demo1234" required><button type="button" class="icon-btn ghost trailing" data-action="toggle-password" aria-label="Show password">${icon("eye", 18)}</button></div></div>${ui.loginError ? `<p class="field-error">${escapeHtml(ui.loginError)}</p>` : ""}<button class="btn primary full" type="submit">Log In</button><div class="or-divider">Or continue with</div><div class="social-row"><button type="button" class="btn outline" data-action="social">G&nbsp; Google</button><button type="button" class="btn outline" data-action="social">●&nbsp; Apple</button></div></form><p class="auth-footer">Don't have an account? <button class="text-link" data-go="signup">Sign Up</button></p></main>`;
+  return `<main class="screen auth-screen"><section class="auth-hero"><img src="assets/logo.png" alt="BuildCycle logo"><p class="eyebrow">Build more, waste less</p><h1>BuildCycle</h1><p>Welcome back to the marketplace</p></section><form id="login-form" class="auth-card"><div class="auth-card-intro"><h2>Log in to your account</h2><p>Find materials and keep your projects moving.</p></div><div class="form-group"><label for="login-email" class="field-label">Email Address</label><div class="input-with-icon"><span class="lead">${icon("user", 18)}</span><input class="field" type="email" id="login-email" name="email" placeholder="you@example.com" value="${escapeHtml(data.user.email)}" required autocomplete="email"></div></div><div class="form-group"><div style="display:flex;justify-content:space-between"><label for="login-pass" class="field-label">Password</label><button type="button" class="text-link small" data-sheet="forgot">FORGOT?</button></div><div class="input-with-icon"><span class="lead">${icon("lock", 18)}</span><input class="field" type="password" id="login-pass" name="password" placeholder="Enter any demo password" value="demo1234" required><button type="button" class="icon-btn ghost trailing" data-action="toggle-password" aria-label="Show password">${icon("eye", 18)}</button></div></div>${ui.loginError ? `<p class="field-error">${escapeHtml(ui.loginError)}</p>` : ""}<button class="btn primary full" type="submit">Log In</button><div class="or-divider">Or continue with</div><div class="social-row"><button type="button" class="btn outline social-btn" data-action="social"><span class="social-mark google" aria-hidden="true">G</span>Google</button><button type="button" class="btn outline social-btn" data-action="social"><span class="social-mark apple" aria-hidden="true">A</span>Apple</button></div></form><p class="auth-footer">Don't have an account? <button class="text-link" data-go="signup">Sign Up</button></p></main>`;
 }
 function renderSignup() {
-  return `<main class="screen auth-screen">${topbar("Create Account")}<div class="signup-intro"><h1>Join BuildCycle</h1><p>Start sourcing surplus materials today.</p></div><form id="signup-form" class="signup-form"><div class="form-group"><label class="field-label" for="signup-name">Full Name</label><input class="field" id="signup-name" name="name" placeholder="Juan Dela Cruz" required></div><div class="form-group"><label class="field-label" for="signup-email">Email Address</label><input class="field" type="email" id="signup-email" name="email" placeholder="name@example.com" required></div><div class="form-group"><label class="field-label" for="signup-pass">Password</label><input class="field" type="password" id="signup-pass" name="password" placeholder="At least 6 characters" minlength="6" required></div><div class="form-group"><label class="field-label" for="signup-location">Location</label><input class="field" id="signup-location" name="location" value="Tubigon, Bohol" required></div>${ui.signupError ? `<p class="field-error">${escapeHtml(ui.signupError)}</p>` : ""}<button class="btn primary full" type="submit">Sign Up ${icon("arrow", 18)}</button><div class="or-divider">Or sign up with</div><div class="social-row"><button type="button" class="btn outline" data-action="social">G</button><button type="button" class="btn outline" data-action="social">●</button></div><p class="center small muted" style="margin:28px 0">Already have an account? <button type="button" class="text-link" data-go="login">Login</button></p></form></main>`;
+  return `<main class="screen auth-screen">${topbar("Create Account")}<div class="signup-intro"><h1>Join BuildCycle</h1><p>Start sourcing surplus materials today.</p></div><form id="signup-form" class="signup-form"><div class="form-group"><label class="field-label" for="signup-name">Full Name</label><input class="field" id="signup-name" name="name" placeholder="Juan Dela Cruz" required></div><div class="form-group"><label class="field-label" for="signup-email">Email Address</label><input class="field" type="email" id="signup-email" name="email" placeholder="name@example.com" required></div><div class="form-group"><label class="field-label" for="signup-pass">Password</label><input class="field" type="password" id="signup-pass" name="password" placeholder="At least 6 characters" minlength="6" required></div><div class="form-group"><label class="field-label" for="signup-location">Location</label><input class="field" id="signup-location" name="location" value="Tubigon, Bohol" required></div>${ui.signupError ? `<p class="field-error">${escapeHtml(ui.signupError)}</p>` : ""}<button class="btn primary full" type="submit">Sign Up ${icon("arrow", 18)}</button><div class="or-divider">Or sign up with</div><div class="social-row"><button type="button" class="btn outline social-btn" data-action="social"><span class="social-mark google" aria-hidden="true">G</span>Google</button><button type="button" class="btn outline social-btn" data-action="social"><span class="social-mark apple" aria-hidden="true">A</span>Apple</button></div><p class="center small muted" style="margin:28px 0">Already have an account? <button type="button" class="text-link" data-go="login">Login</button></p></form></main>`;
 }
 function renderHome() {
-  const featured = data.listings
-    .filter((x) => x.status !== "sold" && !x.mine)
+  const filtersActive = hasActiveFilters();
+  const filterCount = activeFilterCount();
+  const featured = filteredListings({ includeSearch: false })
+    .filter((x) => !x.mine)
     .slice(0, 4);
-  return `<main class="screen scroll-screen"><header class="brand-hero"><h1>BuildCycle</h1><img class="brand-mark" src="assets/logo.png" alt="BuildCycle"><p>Surplus materials near ${escapeHtml(data.user.location.split(",")[0])}</p></header><div class="search-strip"><button class="search-trigger" data-go="search">${icon("search", 19)} <span>Search materials, e.g. tiles, steel...</span></button><button class="square-filter" data-sheet="filters" aria-label="Open filters">${icon("filter", 22)}</button></div><section class="list-stack">${featured.map(featureCard).join("")}<button class="btn outline full" data-go="search">Explore all materials ${icon("arrow", 16)}</button></section></main>${nav("home", true)}`;
+  const heading = filtersActive ? "Matching materials" : "Featured nearby";
+  const action = filtersActive
+    ? `<button class="text-link small" data-sheet="filters">${filterCount} filter${filterCount === 1 ? "" : "s"} active</button>`
+    : `<button class="text-link small" data-go="search">See all</button>`;
+  const content = featured.length
+    ? featured.map(featureCard).join("")
+    : `<div class="empty-state home-empty-state">${icon("search", 35)}<h3>No matching materials</h3><p>Try widening your filters to see more available surplus.</p><button class="btn outline slim" data-action="clear-filters">Clear filters</button></div>`;
+  return `<main class="screen scroll-screen"><header class="home-header"><img class="brand-mark" src="assets/logo.png" alt="BuildCycle"><div class="home-copy"><p class="eyebrow">Materials marketplace</p><h1>BuildCycle</h1><p>Surplus materials near ${escapeHtml(data.user.location.split(",")[0])}</p></div></header><section class="list-stack"><div class="home-section-heading"><div><p class="eyebrow">${filtersActive ? "Filtered results" : "Discover"}</p><h2>${heading}</h2></div>${action}</div>${content}</section></main>${nav("home")}`;
 }
-function filteredListings() {
+function filteredListings({ includeSearch = true } = {}) {
   let list = data.listings.filter((l) => l.status !== "sold");
   const term = ui.search.trim().toLowerCase();
-  if (term)
+  if (includeSearch && term)
     list = list.filter((l) =>
       `${l.title} ${l.category} ${l.description} ${l.location}`
         .toLowerCase()
@@ -492,9 +261,25 @@ function filteredListings() {
   else list = [...list].reverse();
   return list;
 }
+function hasActiveFilters() {
+  return (
+    ui.category !== "All" ||
+    ui.condition !== "All" ||
+    ui.distance !== "Any" ||
+    Boolean(ui.maxPrice)
+  );
+}
+function activeFilterCount() {
+  return [
+    ui.category !== "All",
+    ui.condition !== "All",
+    ui.distance !== "Any",
+    Boolean(ui.maxPrice),
+  ].filter(Boolean).length;
+}
 function resultsMarkup() {
   const list = filteredListings();
-  return `<div class="result-toolbar"><strong>${list.length} results found</strong><button data-sheet="sort">Sort by: <b>${escapeHtml(ui.sort)}</b></button></div>${list.length ? `<div class="product-grid">${list.map(productCard).join("")}</div>` : `<div class="empty-state">${icon("search", 35)}<h3>No matching materials</h3><p>Try another search or clear your filters.</p><button class="btn outline slim" data-action="clear-filters">Clear filters</button></div>`}`;
+  return `<div class="result-toolbar"><strong>${list.length} results found</strong><button data-sheet="sort">Sort by: <b>${escapeHtml(ui.sort)}</b></button></div>${list.length ? `<div class="product-grid">${list.map(productCard).join("")}</div>` : `<div class="empty-state">${icon("search", 35)}<h3>No matching materials</h3><p>Try another search or reset all filters.</p><button class="btn outline slim" data-action="reset-search">Reset search</button></div>`}`;
 }
 function renderSearch() {
   return `<main class="screen scroll-screen"><div class="search-head"><label class="search-field">${icon("search", 18)}<input id="search-input" type="search" value="${escapeHtml(ui.search)}" placeholder="Search materials" aria-label="Search materials"></label><button class="square-filter" data-sheet="filters" aria-label="Open filters">${icon("filter", 22)}</button></div><div class="chips-scroll"><button class="chip ${ui.category !== "All" ? "selected" : ""}" data-sheet="filters">${ui.category === "All" ? "Material" : escapeHtml(ui.category)} ${icon("down", 14)}</button><button class="chip ${ui.distance !== "Any" ? "selected" : ""}" data-sheet="filters">${ui.distance === "Any" ? "Distance" : ui.distance + " km"} ${icon("down", 14)}</button><button class="chip ${ui.maxPrice ? "selected" : ""}" data-sheet="filters">${ui.maxPrice ? `Up to ${money(ui.maxPrice)}` : "Price"} ${icon("down", 14)}</button><button class="chip ${ui.condition !== "All" ? "selected" : ""}" data-sheet="filters">${ui.condition === "All" ? "Condition" : escapeHtml(ui.condition)} ${icon("down", 14)}</button></div><div id="search-results">${resultsMarkup()}</div></main>${nav("search")}`;
@@ -502,29 +287,47 @@ function renderSearch() {
 function renderDetail() {
   const l = getListing(ui.selectedId),
     saved = data.saved.includes(l.id);
-  return `<main class="screen detail-screen">${topbar("", `<button class="icon-btn" data-action="share" aria-label="Share listing">${icon("share")}</button><button class="icon-btn ${saved ? "on" : ""}" data-save="${escapeHtml(l.id)}" aria-label="Save listing">${icon("heart")}</button>`)}<div class="detail-photo"><img src="${escapeHtml(imagePath(l))}" alt="${escapeHtml(l.title)}"><span class="photo-count">1 / 1</span></div><div class="detail-body">${badge(l.tag)}<h1>${escapeHtml(l.title)}</h1><p class="distance">${icon("pin", 15)}${escapeHtml(l.distance)} km away · ${escapeHtml(l.location)}</p><div class="price-row"><div><span class="small muted">Asking Price</span><br><strong>${money(l.price)}</strong><span class="muted"> / ${escapeHtml(l.unit)}</span></div><span class="negotiable">Negotiable</span></div><section class="detail-section"><h2>Description</h2><p>${escapeHtml(l.description)}</p></section><div class="spec-grid">${l.specs.map(([name, value]) => `<div class="spec"><small>${escapeHtml(name)}</small><strong>${escapeHtml(value)}</strong></div>`).join("")}</div><div class="seller-card">${avatar(l.seller)}<div class="seller-info"><b>${escapeHtml(l.seller)}</b><small>★ ${escapeHtml(l.rating || "4.8")} · Sample seller profile</small></div>${l.mine ? badge("Your listing") : badge("Verified demo")}</div><p class="tiny muted" style="margin:0 0 20px">Verification and listing details shown here are illustrative demo information.</p></div><div class="detail-actions"><button class="btn outline slim" data-action="message-seller" aria-label="Message seller">${icon("chat", 20)}</button><button class="btn outline slim" data-sheet="offer">Make Offer</button><button class="btn primary" data-sheet="checkout">Buy / Deal</button></div></main>`;
+  return `<main class="screen detail-screen">${topbar("", `<button class="icon-btn" data-action="share" aria-label="Share listing">${icon("share")}</button><button class="icon-btn save-detail ${saved ? "on" : ""}" data-save="${escapeHtml(l.id)}" aria-label="${saved ? "Remove from saved items" : "Save listing"}" aria-pressed="${saved}">${icon("heart")}</button>`)}<div class="detail-photo"><img src="${escapeHtml(imagePath(l))}" alt="${escapeHtml(l.title)}"><span class="photo-count">1 / 1</span></div><div class="detail-body">${badge(l.tag)}<h1>${escapeHtml(l.title)}</h1><p class="distance">${icon("pin", 15)}${escapeHtml(l.distance)} km away · ${escapeHtml(l.location)}</p><div class="price-row"><div><span class="small muted">Asking Price</span><br><strong>${money(l.price)}</strong><span class="muted"> / ${escapeHtml(l.unit)}</span></div><span class="negotiable">Negotiable</span></div><section class="detail-section"><h2>Description</h2><p>${escapeHtml(l.description)}</p></section><div class="spec-grid">${l.specs.map(([name, value]) => `<div class="spec"><small>${escapeHtml(name)}</small><strong>${escapeHtml(value)}</strong></div>`).join("")}</div><div class="seller-card">${avatar(l.seller)}<div class="seller-info"><b>${escapeHtml(l.seller)}</b><small>★ ${escapeHtml(l.rating || "4.8")} · Sample seller profile</small></div>${l.mine ? badge("Your listing") : badge("Verified demo")}</div><p class="tiny muted" style="margin:0 0 20px">Verification and listing details shown here are illustrative demo information.</p></div><div class="detail-actions"><button class="btn outline slim" data-action="message-seller" aria-label="Message seller">${icon("chat", 20)}</button><button class="btn outline slim" data-sheet="offer">Make Offer</button><button class="btn primary" data-sheet="checkout">Buy / Deal</button></div></main>`;
 }
-function renderChats() {
+function filteredChats() {
   let chats = data.chats.filter(
     (c) =>
       ui.chatTab === "All Chats" ||
       (ui.chatTab === "Buying" ? c.type === "buying" : c.type === "selling"),
   );
-  return `<main class="screen scroll-screen"><header class="topbar" style="border:0;padding-top:23px"><h1 class="heading">Messages</h1><button class="icon-btn" data-action="chat-search" aria-label="Search chats">${icon("search")}</button><button class="icon-btn" data-sheet="chat-help" aria-label="Messages information">${icon("filter")}</button></header><div class="tab-row pills">${["All Chats", "Selling", "Buying"].map((t) => `<button class="${ui.chatTab === t ? "selected" : ""}" data-chat-tab="${t}">${t}</button>`).join("")}</div>${
-    chats.length
-      ? chats
-          .map((c) => {
-            let l = getListing(c.listingId);
-            return `<button class="chat-list-row" data-open-chat="${escapeHtml(c.id)}">${avatar(c.name, "lg", c.online)}<span class="body"><span class="name-line"><strong>${escapeHtml(c.name)}</strong><small class="muted">${escapeHtml(c.time)}</small></span><span class="preview">${escapeHtml(c.last)}</span><span class="listing-name">${icon("tag", 12)}${escapeHtml(l.title)}</span></span></button>`;
-          })
-          .join("")
-      : `<div class="empty-state">${icon("chat", 35)}<h3>No chats yet</h3><p>Message a seller to start a conversation.</p></div>`
-  }</main>${nav("chats")}`;
+  const term = ui.chatSearch.trim().toLowerCase();
+  if (term) {
+    chats = chats.filter((c) => {
+      const listing = data.listings.find((l) => l.id === c.listingId);
+      return `${c.name} ${c.last} ${listing?.title || ""}`
+        .toLowerCase()
+        .includes(term);
+    });
+  }
+  return chats;
+}
+function chatListMarkup() {
+  const chats = filteredChats();
+  if (!chats.length) {
+    return `<div class="empty-state">${icon("chat", 35)}<h3>${ui.chatSearch ? "No matching chats" : "No chats yet"}</h3><p>${ui.chatSearch ? "Try a person, message, or listing name." : "Message a seller to start a conversation."}</p>${ui.chatSearch ? '<button class="btn outline slim" data-action="clear-chat-search">Clear chat search</button>' : ""}</div>`;
+  }
+  return chats
+    .map((c) => {
+      const l = getListing(c.listingId);
+      return `<button class="chat-list-row" data-open-chat="${escapeHtml(c.id)}">${avatar(c.name, "lg", c.online)}<span class="body"><span class="name-line"><strong>${escapeHtml(c.name)}</strong><small class="muted">${escapeHtml(c.time)}</small></span><span class="preview">${escapeHtml(c.last)}</span><span class="listing-name">${icon("tag", 12)}${escapeHtml(l.title)}</span></span></button>`;
+    })
+    .join("");
+}
+function renderChats() {
+  const search = ui.chatSearchOpen
+    ? `<div class="chat-search-row"><label class="chat-search-field">${icon("search", 18)}<input id="chat-search-input" type="search" value="${escapeHtml(ui.chatSearch)}" placeholder="Search people or listings" aria-label="Search chats"></label><button class="icon-btn ghost" data-action="clear-chat-search" aria-label="Close chat search">${icon("x", 18)}</button></div>`
+    : "";
+  return `<main class="screen scroll-screen"><header class="topbar" style="border:0;padding-top:23px"><h1 class="heading">Messages</h1><button class="icon-btn chat-search-toggle ${ui.chatSearchOpen ? "active" : ""}" data-action="chat-search" aria-label="Search chats" aria-expanded="${ui.chatSearchOpen}">${icon("search")}</button><button class="icon-btn" data-sheet="chat-help" aria-label="Messages information">${icon("filter")}</button></header>${search}<div class="tab-row pills">${["All Chats", "Selling", "Buying"].map((t) => `<button class="${ui.chatTab === t ? "selected" : ""}" data-chat-tab="${t}">${t}</button>`).join("")}</div><div id="chat-list">${chatListMarkup()}</div></main>${nav("chats")}`;
 }
 function renderChat() {
   let c = getChat(ui.chatId),
     l = getListing(c.listingId);
-  return `<main class="screen chat-screen"><header class="chat-thread-header"><button class="icon-btn ghost" data-action="back" aria-label="Back to chats">${icon("back")}</button>${avatar(c.name, "sm", c.online)}<div class="info"><strong>${escapeHtml(c.name)}</strong><small>${c.online ? "Online" : "Usually replies today"}</small></div><button class="icon-btn ghost" data-sheet="chat-help" aria-label="Chat options">${icon("more")}</button></header><div class="conversation" id="conversation"><div class="today-label">TODAY</div>${c.messages.map((m) => `<div class="bubble-wrap ${m.mine ? "mine" : ""}">${!m.mine ? avatar(c.name, "sm") : ""}<div><div class="bubble">${escapeHtml(m.text)}</div><div class="bubble-time">${escapeHtml(m.time)}</div></div></div>`).join("")}<button class="message-attachment" data-open-listing="${escapeHtml(l.id)}"><img src="${escapeHtml(imagePath(l))}" alt=""><span><strong>${escapeHtml(l.title)}</strong><small>${money(l.price)} / ${escapeHtml(l.unit)}</small></span></button>${c.offer ? `<div class="offer-card"><strong>${c.offer.status === "accepted" ? "Offer accepted" : "Demo offer sent"}</strong><div class="offer-price">${money(c.offer.price)} / ${escapeHtml(l.unit)}</div><small class="muted">${escapeHtml(c.offer.fulfilment === "delivery" ? "Partner delivery quote chosen" : "Self-arranged pickup")}</small>${c.offer.status === "pending" ? `<div class="offer-actions"><button class="btn teal slim" data-action="accept-offer">Accept offer (demo)</button><button class="btn outline slim" data-sheet="offer">Revise</button></div>` : `<button class="btn primary slim" data-action="start-deal">Continue deal</button>`}</div>` : ""}${data.deals.some((d) => d.chatId === c.id) ? `<button class="btn outline full" data-action="view-deal" style="margin-top:14px">${icon("shield", 16)} View protected deal</button>` : ""}</div><form id="chat-form" class="composer"><button type="button" class="icon-btn ghost" data-sheet="chat-actions" aria-label="More chat actions">${icon("plus")}</button><input name="message" placeholder="Type a message..." aria-label="Type a message" autocomplete="off"><button type="submit" class="send" aria-label="Send message">${icon("send", 18)}</button></form></main>`;
+  return `<main class="screen chat-screen"><header class="chat-thread-header"><button class="icon-btn ghost" data-action="back" aria-label="Back to chats">${icon("back")}</button>${avatar(c.name, "sm", c.online)}<div class="info"><strong>${escapeHtml(c.name)}</strong><small>${c.online ? "Online" : "Usually replies today"}</small></div><button class="icon-btn ghost" data-sheet="chat-help" aria-label="Chat options">${icon("more")}</button></header><div class="conversation" id="conversation"><div class="today-label">TODAY</div>${c.messages.map((m) => `<div class="bubble-wrap ${m.mine ? "mine" : ""}">${!m.mine ? avatar(c.name, "sm") : ""}<div class="bubble-stack"><div class="bubble">${escapeHtml(m.text)}</div><div class="bubble-time">${escapeHtml(m.time)}</div></div></div>`).join("")}<button class="message-attachment" data-open-listing="${escapeHtml(l.id)}"><img src="${escapeHtml(imagePath(l))}" alt=""><span><strong>${escapeHtml(l.title)}</strong><small>${money(l.price)} / ${escapeHtml(l.unit)}</small></span></button>${c.offer ? `<div class="offer-card"><strong>${c.offer.status === "accepted" ? "Offer accepted" : "Demo offer sent"}</strong><div class="offer-price">${money(c.offer.price)} / ${escapeHtml(l.unit)}</div><small class="muted">${escapeHtml(c.offer.fulfilment === "delivery" ? "Partner delivery quote chosen" : "Self-arranged pickup")}</small>${c.offer.status === "pending" ? `<div class="offer-actions"><button class="btn teal slim" data-action="accept-offer">Accept offer (demo)</button><button class="btn outline slim" data-sheet="offer">Revise</button></div>` : `<button class="btn primary slim" data-action="start-deal">Continue deal</button>`}</div>` : ""}${data.deals.some((d) => d.chatId === c.id) ? `<button class="btn outline full" data-action="view-deal" style="margin-top:14px">${icon("shield", 16)} View protected deal</button>` : ""}</div><form id="chat-form" class="composer"><button type="button" class="icon-btn ghost" data-sheet="chat-actions" aria-label="More chat actions">${icon("plus")}</button><input name="message" placeholder="Type a message..." aria-label="Type a message" autocomplete="off"><button type="submit" class="send" aria-label="Send message">${icon("send", 18)}</button></form></main>`;
 }
 const categories = [
   "Lumber",
@@ -572,19 +375,24 @@ function renderUpload() {
     <label class="option-row"><input type="checkbox" name="premium" ${ui.premium ? "checked" : ""}><span class="option-copy"><b>Premium visibility</b><small>Optional highlighted listing · illustrative fee</small></span></label>
     <div class="fee-note" id="fee-preview">Listing is free. Example success fee: <b>5%</b> of a completed material sale. Premium example: <b>3%</b> additional. No charge or real listing is created.</div>
     ${ui.listingError ? `<p class="field-error">${escapeHtml(ui.listingError)}</p>` : ""}<button class="btn primary full" type="submit">${l ? "SAVE CHANGES" : "POST LISTING"}</button>
-  </form></main>${nav("upload", true)}`;
+  </form></main>${nav("upload")}`;
 }
 function renderConfirmation() {
   const l = getListing(ui.selectedId);
   return `<main class="screen success-screen"><div class="success-ring"><span>${icon("check", 50)}</span></div><h1>Listing Live!</h1><p>Your materials are now visible to builders nearby. You'll be notified when someone expresses interest.</p><button class="success-preview" data-open-listing="${escapeHtml(l.id)}"><img src="${escapeHtml(imagePath(l))}" alt=""><span><strong>${escapeHtml(l.title)}</strong><small>${icon("pin", 12)} ${escapeHtml(l.location)}</small></span><b>${money(l.price)}</b></button><button class="btn teal full" data-go="my-listings">View My Listing ${icon("arrow", 17)}</button><button class="btn outline full" data-go="home">Back to Home</button><p class="small muted" style="margin-top:30px">Demo listing saved in this browser.</p></main>`;
 }
-function profileRow(label, ic, target, extra = "") {
-  return `<button class="profile-row ${extra}" ${target.startsWith("sheet:") ? `data-sheet="${target.slice(6)}"` : `data-go="${target}"`}><span class="icon-badge">${icon(ic, 20)}</span>${escapeHtml(label)}<span class="chevron">${icon("chevron", 16)}</span></button>`;
+function profileRow(label, ic, target, extra = "", meta = "") {
+  const targetAttribute = target.startsWith("sheet:")
+    ? `data-sheet="${target.slice(6)}"`
+    : target.startsWith("action:")
+      ? `data-action="${target.slice(7)}"`
+      : `data-go="${target}"`;
+  return `<button class="profile-row ${extra}" ${targetAttribute}><span class="icon-badge">${icon(ic, 20)}</span>${escapeHtml(label)}${meta ? `<span class="profile-row-meta" aria-label="${escapeHtml(meta)} saved">${escapeHtml(meta)}</span>` : ""}<span class="chevron">${icon("chevron", 16)}</span></button>`;
 }
 function renderProfile() {
   const own = data.listings.filter((l) => l.mine),
     sold = own.filter((l) => l.status === "sold").length;
-  return `<main class="screen scroll-screen"><section class="profile-head"><div style="display:flex;justify-content:space-between;align-items:center"><h1 class="heading">Profile</h1><button class="icon-btn" data-sheet="notifications" aria-label="Notifications">${icon("bell")}</button></div><div class="profile-person">${avatar(data.user.name, "lg")}<div><h2>${escapeHtml(data.user.name)}</h2><div class="muted small">${icon("pin", 14)} ${escapeHtml(data.user.location)}</div><button class="btn slim dark" data-sheet="edit-profile">Edit Profile</button></div></div><div class="profile-stats"><div><strong>${own.length}</strong><span>LISTINGS</span></div><div><strong>${sold}</strong><span>SALES</span></div><div><strong>4.8 ★</strong><span>DEMO RATING</span></div></div></section><section class="profile-section"><h3 class="eyebrow">ACCOUNT ACTIVITY</h3>${profileRow("My Listings", "tag", "my-listings")}${profileRow("Saved Items", "heart", "saved")}${profileRow("Payment Methods", "card", "sheet:payments")}${profileRow("Business & Verification", "shield", "sheet:business")}</section><section class="profile-section"><h3 class="eyebrow">GENERAL</h3>${profileRow("Settings", "settings", "sheet:settings")}${profileRow("Help Center", "help", "sheet:help")}${profileRow("Logout", "logout", "sheet:logout", "danger")}</section></main>${nav("profile")}`;
+  return `<main class="screen scroll-screen"><section class="profile-head"><div style="display:flex;justify-content:space-between;align-items:center"><h1 class="heading">Profile</h1><button class="icon-btn" data-sheet="notifications" aria-label="Notifications">${icon("bell")}</button></div><div class="profile-person">${avatar(data.user.name, "lg")}<div><h2>${escapeHtml(data.user.name)}</h2><div class="muted small">${icon("pin", 14)} ${escapeHtml(data.user.location)}</div><button class="btn slim dark" data-sheet="edit-profile">Edit Profile</button></div></div><div class="profile-stats"><div><strong>${own.length}</strong><span>LISTINGS</span></div><div><strong>${sold}</strong><span>SALES</span></div><div><strong>4.8 ★</strong><span>DEMO RATING</span></div></div></section><section class="profile-section"><h3 class="eyebrow">ACCOUNT ACTIVITY</h3>${profileRow("My Listings", "tag", "my-listings")}${profileRow("Saved Items", "heart", "saved", "", String(data.saved.length))}${profileRow("Payment Methods", "card", "sheet:payments")}${profileRow("Business & Verification", "shield", "sheet:business")}</section><section class="profile-section"><h3 class="eyebrow">GENERAL</h3>${profileRow("Settings", "settings", "sheet:settings")}${profileRow("Try the Web!", "arrow", "action:try-web", "switch")}${profileRow("Reset Demo Marketplace", "refresh", "sheet:reset", "reset")}${profileRow("Help Center", "help", "sheet:help")}${profileRow("Logout", "logout", "sheet:logout", "danger")}</section></main>${nav("profile")}`;
 }
 function renderMyListings() {
   let own = data.listings.filter((l) => l.mine);
@@ -704,12 +512,12 @@ function renderSheet() {
     case "settings":
       return sheetFrame(
         "Settings",
-        `<button class="option-row" style="width:100%" data-sheet="location">${icon("pin")} Edit location</button><button class="option-row" style="width:100%" data-sheet="reset">${icon("settings")} Reset demo data</button>`,
+        `<button class="option-row" style="width:100%;background:#fff;text-align:left" data-sheet="location">${icon("pin")}<span class="option-copy"><b>Edit location</b><small>Change the place shown across the demo.</small></span></button>`,
       );
     case "reset":
       return sheetFrame(
-        "Reset demo?",
-        `<p>This clears listings, messages, reviews and saved items stored by this prototype in this browser.</p><div class="sheet-actions"><button class="btn outline" data-action="close-sheet">Cancel</button><button class="btn primary" data-action="reset-demo">Reset</button></div>`,
+        "Reset demo marketplace?",
+        `<p>This restores the starter listings, chats, reviews, and saved items. Your signed-in profile stays in place for the next presentation.</p><div class="sheet-actions"><button class="btn outline" data-action="close-sheet">Cancel</button><button class="btn primary" data-action="reset-demo">Reset demo</button></div>`,
       );
     case "logout":
       return sheetFrame(
@@ -753,20 +561,29 @@ function goto(screen, { replace = false } = {}) {
   if (!replace && screen !== ui.screen) ui.history.push(ui.screen);
   ui.screen = screen;
   ui.sheet = null;
+  sheetTrigger = null;
   render();
 }
 function back() {
   if (ui.sheet) {
-    ui.sheet = null;
-    render();
+    closeSheet();
     return;
   }
   let previous = ui.history.pop();
   goto(previous || "home", { replace: true });
 }
-function showSheet(name) {
+function showSheet(name, trigger = null) {
+  if (!ui.sheet) sheetTrigger = trigger || document.activeElement;
   ui.sheet = name;
-  render();
+  overlayRoot.innerHTML = renderSheet();
+  document.querySelector(".sheet .close")?.focus();
+}
+function closeSheet() {
+  const trigger = sheetTrigger;
+  ui.sheet = null;
+  sheetTrigger = null;
+  overlayRoot.replaceChildren();
+  if (trigger && typeof trigger.focus === "function") trigger.focus();
 }
 function currentChatFor(listing) {
   let c = data.chats.find((x) => x.listingId === listing.id);
@@ -845,8 +662,7 @@ document.addEventListener("click", async (event) => {
   );
   if (!el) return;
   if (el.dataset.action === "close-sheet") {
-    ui.sheet = null;
-    render();
+    closeSheet();
     return;
   }
   if (el.dataset.sheet) {
@@ -859,7 +675,7 @@ document.addEventListener("click", async (event) => {
         return;
       }
     }
-    showSheet(el.dataset.sheet);
+    showSheet(el.dataset.sheet, el);
     return;
   }
   if (el.dataset.go) {
@@ -973,6 +789,11 @@ document.addEventListener("click", async (event) => {
     toast("Social sign-in is illustrative. Use the email demo login.");
     return;
   }
+  if (action === "try-web") {
+    persist();
+    window.location.assign("BuildCycle_Web.html");
+    return;
+  }
   if (action === "share") {
     try {
       await navigator.clipboard.writeText(
@@ -994,8 +815,16 @@ document.addEventListener("click", async (event) => {
     return;
   }
   if (action === "chat-search") {
-    ui.chatTab = "All Chats";
-    toast("Use the Buying and Selling tabs to browse chats.");
+    ui.chatSearchOpen = !ui.chatSearchOpen;
+    if (!ui.chatSearchOpen) ui.chatSearch = "";
+    render();
+    document.getElementById("chat-search-input")?.focus();
+    return;
+  }
+  if (action === "clear-chat-search") {
+    ui.chatSearchOpen = false;
+    ui.chatSearch = "";
+    render();
     return;
   }
   if (action === "accept-offer") {
@@ -1037,6 +866,18 @@ document.addEventListener("click", async (event) => {
     render();
     return;
   }
+  if (action === "reset-search") {
+    ui.search = "";
+    ui.sort = "Newest";
+    ui.category = "All";
+    ui.condition = "All";
+    ui.distance = "Any";
+    ui.maxPrice = "";
+    ui.sheet = null;
+    render();
+    document.getElementById("search-input")?.focus();
+    return;
+  }
   if (action === "remove-photo") {
     ui.photo = null;
     if (ui.editId) ui.draft.imageRemoved = true;
@@ -1046,8 +887,9 @@ document.addEventListener("click", async (event) => {
   if (action === "ai-suggest") {
     const form = document.getElementById("upload-form"),
       cat = form.elements.category.value,
-      title = form.elements.title.value.trim();
-    const suggestion = `${title || "Surplus " + cat.toLowerCase()} available in '+data.user.location}. Available for local inspection and pickup. Please ask for measurements, quantity details and collection schedule before confirming your purchase.`;
+      title = form.elements.title.value.trim(),
+      listingLocation = form.elements.location.value.trim() || data.user.location;
+    const suggestion = `${title || "Surplus " + cat.toLowerCase()} available in ${listingLocation}. Available for local inspection and pickup. Please ask for measurements, quantity details, and collection schedule before confirming your purchase.`;
     form.elements.description.value = suggestion;
     ui.draft.description = suggestion;
     ui.aiSuggested = true;
@@ -1111,26 +953,66 @@ document.addEventListener("click", async (event) => {
     return;
   }
   if (action === "reset-demo") {
+    const profile = structuredClone(data.user);
     data = freshState();
-    localStorage.removeItem(STORAGE_KEY);
+    data.onboarded = true;
+    data.authed = true;
+    data.user = profile;
+    persist();
     ui = {
-      ...ui,
-      screen: "onboarding",
+      screen: "home",
       history: [],
       sheet: null,
       selectedId: "lumber",
       chatId: "marcus",
       search: "",
+      sort: "Newest",
       category: "All",
       condition: "All",
       distance: "Any",
       maxPrice: "",
+      chatTab: "All Chats",
+      chatSearchOpen: false,
+      chatSearch: "",
+      myTab: "Active",
+      photo: null,
       draft: {},
       editId: null,
+      aiSuggested: false,
+      premium: false,
+      offerPrice: "",
+      fulfilment: "pickup",
+      payMethod: "protected",
+      dealId: null,
+      rating: 0,
+      reviewTags: [],
+      loginError: "",
+      signupError: "",
+      listingError: "",
     };
     render();
-    toast("Demo data reset");
+    toast("Demo marketplace restored");
     return;
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && ui.sheet) {
+    event.preventDefault();
+    closeSheet();
+  }
+});
+window.addEventListener("storage", (event) => {
+  if (event.key !== STORAGE_KEY || !event.newValue) return;
+  try {
+    data = hydrateState(JSON.parse(event.newValue));
+    if (!data.onboarded) ui.screen = "onboarding";
+    else if (!data.authed) ui.screen = "login";
+    else if (["onboarding", "login", "signup"].includes(ui.screen))
+      ui.screen = "home";
+    render();
+    toast("Demo data updated from another BuildCycle tab");
+  } catch {
+    /* Ignore malformed external storage events. */
   }
 });
 document.addEventListener("input", (event) => {
@@ -1139,6 +1021,12 @@ document.addEventListener("input", (event) => {
     ui.search = el.value;
     const results = document.getElementById("search-results");
     if (results) results.innerHTML = resultsMarkup();
+    return;
+  }
+  if (el.id === "chat-search-input") {
+    ui.chatSearch = el.value;
+    const chats = document.getElementById("chat-list");
+    if (chats) chats.innerHTML = chatListMarkup();
     return;
   }
   if (el.closest("#upload-form") && el.name && el.name !== "photo") {
@@ -1228,7 +1116,8 @@ document.addEventListener("submit", (event) => {
     ui.maxPrice = values.maxPrice;
     ui.condition = values.condition;
     ui.sheet = null;
-    goto("search");
+    if (ui.screen === "home") render();
+    else goto("search");
     return;
   }
   if (form.id === "profile-form") {
