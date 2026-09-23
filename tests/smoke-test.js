@@ -26,6 +26,7 @@ const getNode = (id) => {
 const listeners = {};
 const windowListeners = {};
 const closeButton = makeNode("sheet-close");
+const dealTimeline = makeNode("deal-timeline");
 const document = {
   activeElement: null,
   getElementById: getNode,
@@ -33,7 +34,9 @@ const document = {
     listeners[type] = handler;
   },
   querySelector(selector) {
-    return selector === ".sheet .close" ? closeButton : null;
+    if (selector === ".sheet .close") return closeButton;
+    if (selector === ".deal-steps") return dealTimeline;
+    return null;
   },
   querySelectorAll() {
     return [];
@@ -177,6 +180,10 @@ const input = (id, value) =>
   assert.equal(vm.runInContext("data.deals[0].quantity", context), 20);
   assert.match(vm.runInContext("renderDeal()", context), /Material subtotal/);
   assert.match(vm.runInContext("renderDeal()", context), /₱360/);
+  dealTimeline.scrollTop = 210;
+  await click({ action: "advance-deal" });
+  assert.equal(dealTimeline.scrollTop, 210);
+  assert.equal(vm.runInContext("data.deals[0].step", context), 1);
   vm.runInContext('goto("home")', context);
 
   const onboarding = vm.runInContext("renderOnboarding()", context);

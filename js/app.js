@@ -1477,11 +1477,15 @@ document.addEventListener("click", async (event) => {
     return;
   }
   if (action === "advance-deal") {
+    const dealTimeline = document.querySelector(".deal-steps");
+    const previousScrollTop = dealTimeline?.scrollTop || 0;
     let d = data.deals.find((x) => x.id === ui.dealId);
     let steps = d.fulfilment === "delivery" ? deliverySteps : pickupSteps;
     d.step = Math.min(d.step + 1, steps.length - 1);
     persist();
     render();
+    const updatedTimeline = document.querySelector(".deal-steps");
+    if (updatedTimeline) updatedTimeline.scrollTop = previousScrollTop;
     if (d.step === steps.length - 1)
       toast("Demo deal completed · you can rate the seller");
     return;
